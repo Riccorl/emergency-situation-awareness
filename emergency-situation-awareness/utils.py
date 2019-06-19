@@ -1,6 +1,8 @@
 import os
 import csv
 from collections import defaultdict
+import config
+import re
 
 
 def read_dataset(in_path: str):
@@ -20,3 +22,14 @@ def read_dataset(in_path: str):
 
 
     return out_data
+
+
+def clear_word(word: str)-> str:
+    """
+    Remove from a word every special character 
+    (tags,hash-tag, number,url,etc).
+    :param word: a string of word
+    :return: a string (a word) without
+    special character
+    """
+    return re.sub(config.REGEX,"",str(word.lower()))
