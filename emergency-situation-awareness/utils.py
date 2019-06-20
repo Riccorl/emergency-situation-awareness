@@ -88,14 +88,13 @@ def unzip(main_folder: str, file: str):
     zip_ref.close()
 
 
-def clear_word(word: str) -> str:
+def clear_word(text: str) -> str:
     """
-    Remove from a word every special character 
-    (tags,hash-tag, number,url,etc).
-    :param word: a string of word
-    :return: a string (a word) without
+    Remove from a string of text every special
+    character (tags,hash-tag, number,url,etc).
+    :param text: a string of text
+    :return: a string (a text) without
     special character
     """
-    # return re.sub(config.REGEX, "", word.lower())
 
-    return " ".join((" ".join(re.compile("[^a-zA-Z\d\s:]").split(word))).split())
+    return " ".join((" ".join(re.compile("[^a-zA-Z\d\s:]").split(text))).split())
