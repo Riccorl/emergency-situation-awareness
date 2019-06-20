@@ -1,14 +1,13 @@
-import utils
 import config
-import pandas as pd
+import utils
 
 
 def main():
-    df = utils.read_dataset(config.CRISIS_NLP_VOLUNTEERS)
-    with pd.option_context(
-        "display.max_rows", None, "display.max_columns", None
-    ):  # more options can be specified also
-        print(df)
+    paths = [config.CRISIS_NLP_VOLUNTEERS] # config.CRISIS_NLP_WORKERS
+    utils.unzip_all(paths)
+    df = utils.read_datasets(paths)
+    for i in df:
+        print(i, '-->\n', '\t text:', df[i]['text'], '\t class: ', df[i]['class'])
 
 
 if __name__ == "__main__":
