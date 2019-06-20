@@ -3,7 +3,11 @@ import csv
 import os
 import re
 import zipfile
+import nltk
 from collections import defaultdict
+import nltk
+from nltk.corpus import stopwords
+
 
 
 def read_datasets(paths: list) -> defaultdict:
@@ -88,13 +92,32 @@ def unzip(main_folder: str, file: str):
     zip_ref.close()
 
 
-def clear_word(text: str) -> str:
+def clear_text(text: str) -> str:
     """
-    Remove from a string of text every special
-    character (tags,hash-tag, number,url,etc).
+    This method remove from a string of text 
+    every special character (tags,hash-tag, number,
+    url,etc).
     :param text: a string of text
     :return: a string (a text) without
     special character
     """
 
     return " ".join((" ".join(re.compile("[^a-zA-Z\d\s:]").split(text))).split())
+
+def stop_words(all_language:bool =False) -> list:
+    """
+    This method is used to generate stop words. 
+    The default language is English but setting
+    the boolean variable to true it generates the
+    stop words for all language.
+    :param all_language: a boolean variable used
+    as flag for the languages.
+    :return: a list containing the stop
+    words.
+    """
+    nltk.download('stopwords',quiet=True)
+
+    if all_language:
+        return stopwords.words(stopwords.fileids())
+    else:
+        return stopwords.words("english")
