@@ -6,6 +6,8 @@ from tensorflow.python.keras.layers import (
     Bidirectional,
     LSTM,
     Input,
+    Dropout,
+    TimeDistributed,
 )
 
 
@@ -26,14 +28,16 @@ def build_model(
         vocab_size, embedding_size, input_length=input_length, mask_zero=True
     )(input_layer)
 
+    drop_em = Dropout(0.3)(em)
+
     lstm1 = Bidirectional(
         layer(
             units=hidden_size,
-            dropout=dropout,
+            dropout=0.3,
             recurrent_dropout=recurrent_dropout,
             return_sequences=False,
         )
-    )(em)
+    )(drop_em)
     # lstm2 = Bidirectional(
     #     layer(units=hidden_size, dropout=dropout, recurrent_dropout=recurrent_dropout)
     # )(lstm1)
