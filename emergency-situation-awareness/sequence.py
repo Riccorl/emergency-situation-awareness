@@ -6,7 +6,9 @@ from tensorflow.python.keras.utils import Sequence
 
 
 class TextSequence(Sequence):
-    def __init__(self, x_set, y_set, batch_size, num_classes, vocab, max_len):
+    def __init__(
+        self, x_set, y_set, batch_size, vocab, max_len, num_classes: int = None
+    ):
         self.x, self.y = x_set, y_set
         self.batch_size = batch_size
         self.num_classes = num_classes

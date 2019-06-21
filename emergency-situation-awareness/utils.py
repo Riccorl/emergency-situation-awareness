@@ -1,12 +1,14 @@
 import csv
 import os
 import re
-import string
 import zipfile
-from typing import List, Set, Dict
-import nltk
+from typing import List, Dict, Tuple
 
+import nltk
+import numpy as np
 from nltk.corpus import stopwords
+
+import config
 
 
 def write_dataset(filename: str, lines: List[str]):
@@ -42,57 +44,78 @@ def write_dictionary(filename: str, dictionary: Dict):
             file.write(k + "\t" + "\t".join(v[0]) + "\n")
 
 
-def read_datasets(crisis_paths, normal_paths):
+def read_datasets() -> Tuple[List[str], List[int]]:
     """
     This method is used to handle all datasets path to read.
-    :param paths: paths to read
     :return: a list of tweets
     """
-    # preprocessing stuffs
-    stops = set(stopwords.words("english")) | set(string.punctuation)
-
     # parse crisis tweets
-    crisis_tweets = _read_tweets(crisis_paths, stops)
+    crisis_tweets = read_crisisnlp() + read_crisilex()
     crisis_tweets_label = [1] * len(crisis_tweets)
     print("Number of crisis tweets:", len(crisis_tweets))
 
     # parse non-crisis tweets
-    normal_tweets = _read_tweets(normal_paths, stops)
+    normal_tweets = read_normal()
     normal_tweets_label = [0] * len(normal_tweets)
     print("Number of non-crisis tweets:", len(normal_tweets))
     return crisis_tweets + normal_tweets, crisis_tweets_label + normal_tweets_label
 
 
-def _read_tweets(filenames: List, stops: Set = None) -> List:
+def read_crisisnlp() -> List[str]:
     """
-    Extract tweet from multiple csv files.
-    :param filenames: list of csv file.
-    :param stops: set of stop words and punctuation to remove.
-    :return: a list of cleaned tweets.
+    Read crisis tweets from crisisnlp folder.
+    :return: list of tweets.
     """
     tweets = []
-    for filename in filenames:
-        with open(filename, encoding="latin1") as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=",")
-            next(csv_reader)
-            for row in csv_reader:
-                if stops:
-                    tweet = _clear_tweet(row[-1].lower().split(), stops)
-                else:
-                    tweet = row[-1].lower().split()
-                if len(tweet) > 2:
-                    tweets.append(tweet)
+    for file in config.CRISISNLP_DIR.glob("./*.csv"):
+        tweets += _read_csv(file)
     return tweets
 
 
-def _clear_tweet(tweet: str, stops: Set) -> List:
+def read_crisilex() -> List[str]:
     """
-    Clean the tweet in input.
-    :param tweet: tweet to clean.
-    :param stops: set of stop words and punctuation to remove.
-    :return: tweet cleaned.
+    Read crisis tweets from crisislex folder.
+    :return: list of tweets.
     """
-    return [word for word in tweet if word not in stops]
+    tweets = []
+    for file in config.CRISISLEX_DIR.glob("./*.csv"):
+        tweets += _read_crisislex_csv(file)
+    return tweets
+
+
+def read_normal() -> List[str]:
+    """
+    Read non-crisis tweets from normal folder.
+    :return: list of tweets.
+    """
+    tweets = []
+    for file in list(config.NORMAL_DIR.glob("./*.csv"))[:6]:
+        tweets += _read_csv(file)
+    return tweets
+
+
+def _read_csv(filename) -> List[str]:
+    """
+    Extract tweet from csv file.
+    :param filename: csv file.
+    :return: a list of tweets.
+    """
+    with open(filename, encoding="latin1") as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=",")
+        next(csv_reader)
+        return [row[-1] for row in csv_reader]
+
+
+def _read_crisislex_csv(filename) -> List[str]:
+    """
+    Extract tweet from csv file.
+    :param filename: csv file.
+    :return: a list of tweets.
+    """
+    with open(filename, encoding="utf8") as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=",")
+        next(csv_reader)
+        return [row[1] for row in csv_reader]
 
 
 def split_dataset(filename: str, n_split: int):
@@ -157,7 +180,7 @@ def clear_text(text: str) -> str:
     return " ".join((" ".join(re.compile("[^a-zA-Z\d\s:]").split(text))).split())
 
 
-def stop_words(all_language:bool =False) -> list:
+def stop_words(all_language: bool = False) -> list:
     """
     This method is used to generate stop words.
     The default language is English but setting
@@ -168,12 +191,44 @@ def stop_words(all_language:bool =False) -> list:
     :return: a list containing the stop
     words.
     """
-    nltk.download('stopwords',quiet=True)
+    nltk.download("stopwords", quiet=True)
 
     if all_language:
         return stopwords.words(stopwords.fileids())
     else:
         return stopwords.words("english")
+
+
+def restrict_w2v(w2v, restricted_word_set):
+    """
+    Retrain from w2v model only words in the restricted word set.
+    :param w2v:
+    :param restricted_word_set:
+    :return:
+    """
+    new_vectors = []
+    new_vocab = {}
+    new_index2entity = []
+    new_vectors_norm = []
+
+    for i in range(len(w2v.vocab)):
+        word = w2v.index2entity[i]
+        vec = w2v.vectors[i]
+        vocab = w2v.vocab[word]
+        # vec_norm = w2v.vectors_norm[i]
+        if word in restricted_word_set:
+            vocab.index = len(new_index2entity)
+            new_index2entity.append(word)
+            new_vocab[word] = vocab
+            new_vectors.append(vec)
+            # new_vectors_norm.append(vec_norm)
+
+    w2v.vocab = new_vocab
+    w2v.vectors = np.array(new_vectors)
+    w2v.index2entity = np.array(new_index2entity)
+    w2v.index2word = np.array(new_index2entity)
+    # w2v.vectors_norm = np.array(new_vectors_norm)
+    return w2v
 
 
 def timer(start: float, end: float) -> str:

@@ -3,7 +3,11 @@ import pathlib
 # directories
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 CRISISNLP_DIR = DATA_DIR / "crisisnlp"
+CRISISLEX_DIR = DATA_DIR / "crisislex"
 NORMAL_DIR = DATA_DIR / "normal"
+
+#
+CRISIS_PRE_TRAINED = pathlib.Path(__file__).resolve().parent.parent / "embeddings" / "crisisNLP_emb.bin"
 
 # crisis nlp
 PAKISTAN_EQ_TWEETS = CRISISNLP_DIR / "2013_pakistan_eq.csv"

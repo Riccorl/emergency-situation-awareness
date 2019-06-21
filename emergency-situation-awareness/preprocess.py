@@ -1,6 +1,10 @@
-from typing import Dict, List
+import re
+import string
+from typing import Dict, List, Set
 
+import gensim
 import numpy as np
+from nltk.corpus import stopwords
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
 
 
@@ -19,20 +23,40 @@ def build_vocab(data: List[List[str]]) -> Dict[str, int]:
     return vocab
 
 
-def texts_to_sequences(lines: List[List[str]], word_index: Dict[str, int]):
+def vocab_from_w2v(word2vec: gensim.models.word2vec.Word2Vec) -> Dict[str, int]:
     """
-    Transforms each text to a sequence of integers.
-    :param lines: A list of list of strings.
-    :param word_index: dictionary of word indexes.
-    :return: A list of sequences.
+    :param word2vec: trained Gensim Word2Vec model
+    :return: a dictionary from token to int
     """
-    return [
-        np.array([word_index.get(word) for word in line if word_index.get(word)])
-        for line in lines
-    ]
+    vocab = {"<PAD>": 0, "<UNK>": 1}
+    for index, word in enumerate(word2vec.wv.index2word):
+        vocab[word] = index + 2
+    return vocab
 
 
-def compute_x(
+def clear_tweets(tweets: List[str]) -> List[List[str]]:
+    """
+    Clear list of tweets.
+    :param tweets: list of tweets.
+    :return: cleared tweets.
+    """
+    # preprocessing stuffs
+    stops = set(stopwords.words("english")) | set(string.punctuation)
+    html_regex = re.compile(r"^https?:\/\/.*[\r\n]*")
+    return [_clear_tweet(tweet, stops, html_regex) for tweet in tweets]
+
+
+def _clear_tweet(tweet: str, stops: Set, html_regex) -> List:
+    """
+    Clean the tweet in input.
+    :param tweet: tweet to clean.
+    :param stops: set of stop words and punctuation to remove.
+    :return: tweet cleaned.
+    """
+    return [word for word in tweet.lower().split() if word not in stops and not html_regex.search(word)]
+
+
+def _compute_x(
     features, vocab: Dict[str, int], max_len: int = 200, pad: bool = True
 ) -> np.ndarray:
     """
@@ -81,6 +105,6 @@ def batch_generator(
                 # truncate the sequence
                 max_len = max_len if max_len < max_input_len else max_input_len
 
-            X_batch = compute_x(features[start:end], vocab, max_len=max_len)
+            X_batch = _compute_x(features[start:end], vocab, max_len=max_len)
             y_batch = np.array(labels[start:end])
             yield X_batch, y_batch
