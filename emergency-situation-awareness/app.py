@@ -85,7 +85,7 @@ def train(tweets_tr, tweets_dev, labels_tr, labels_dev, w2v, w2v_vocab):
 
 def main():
     tweets_tr, tweets_dev, labels_tr, labels_dev, w2v, w2v_vocab = process()
-    # model = train(tweets_tr, tweets_dev, labels_tr, labels_dev, w2v, w2v_vocab)
+    model = train(tweets_tr, tweets_dev, labels_tr, labels_dev, w2v, w2v_vocab)
 
 
 if __name__ == "__main__":
