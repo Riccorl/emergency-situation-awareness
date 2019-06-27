@@ -5,6 +5,7 @@ DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 CRISISNLP_DIR = DATA_DIR / "crisisnlp"
 CRISISLEX_DIR = DATA_DIR / "crisislex"
 NORMAL_DIR = DATA_DIR / "normal"
+OUTPUT_DIR = pathlib.Path(__file__).resolve().parent.parent / "output"
 
 #
 CRISIS_PRE_TRAINED = pathlib.Path(__file__).resolve().parent.parent / "embeddings" / "crisisNLP_emb.bin"

@@ -32,11 +32,11 @@ def process():
     w2v_vocab = preprocess.vocab_from_w2v(w2v)
     print("Cleaned vocab len:", len(w2v_vocab))
     # idx2word = {v: k for k, v in vocab.items()}
-    return tweets_tr, tweets_dev, labels_tr, labels_dev, w2v, w2v_vocab
+    return tweets_tr, tweets_dev, labels_tr, labels_dev, data_vocab, w2v, w2v_vocab
 
 
-def train(tweets_tr, tweets_dev, labels_tr, labels_dev, w2v, w2v_vocab):
-    hidden_size = 100
+def train(tweets_tr, tweets_dev, labels_tr, labels_dev, w2v=None, w2v_vocab=None):
+    hidden_size = 256
     batch_size = 512
     epochs = 5
 
@@ -50,9 +50,8 @@ def train(tweets_tr, tweets_dev, labels_tr, labels_dev, w2v, w2v_vocab):
 
     model = models.build_model(
         hidden_size=hidden_size,
-        dropout=0.3,
+        dropout=0.4,
         recurrent_dropout=0.2,
-        learning_rate=1.0,
         vocab_size=len(w2v_vocab),
         embedding_size=100,
         word2vec=w2v,
@@ -80,12 +79,15 @@ def train(tweets_tr, tweets_dev, labels_tr, labels_dev, w2v, w2v_vocab):
     # tweets_feat_test = preprocess.texts_to_sequences(tweets_feat_test, w2v_vocab)
     #
     # evaluation.evaluate(model, tweets_feat_test, tweets_label_test)
+    model.save(str(config.OUTPUT_DIR / "model.h5"))
+    print("Training complete.")
+
     return model
 
 
 def main():
-    tweets_tr, tweets_dev, labels_tr, labels_dev, w2v, w2v_vocab = process()
-    model = train(tweets_tr, tweets_dev, labels_tr, labels_dev, w2v, w2v_vocab)
+    tweets_tr, tweets_dev, labels_tr, labels_dev, vocab, w2v, w2v_vocab = process()
+    model = train(tweets_tr, tweets_dev, labels_tr, labels_dev, w2v=w2v, w2v_vocab=w2v_vocab)
 
 
 if __name__ == "__main__":
