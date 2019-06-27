@@ -2,9 +2,10 @@ import pathlib
 
 # directories
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
-CRISISNLP_DIR = DATA_DIR / "crisisnlp"
-CRISISLEX_DIR = DATA_DIR / "crisislex"
-NORMAL_DIR = DATA_DIR / "normal"
+TRAIN_DIR = DATA_DIR / "train"
+CRISISNLP_DIR = TRAIN_DIR / "crisisnlp"
+CRISISLEX_DIR = TRAIN_DIR / "crisislex"
+NORMAL_DIR = TRAIN_DIR / "normal"
 OUTPUT_DIR = pathlib.Path(__file__).resolve().parent.parent / "output"
 
 #
