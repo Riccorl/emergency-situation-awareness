@@ -100,8 +100,5 @@ def parse_args():
 
 
 if __name__ == "__main__":
-    # args = parse_args()
-    tweet_dowloader(
-        "../data/ids/2014-08-california_earthquake_2014_20140824_vol-1.json.csv",
-        "../data/downloaded/et_california_2.txt",
-    )
+    args = parse_args()
+    tweet_dowloader(args.input, args.output)
