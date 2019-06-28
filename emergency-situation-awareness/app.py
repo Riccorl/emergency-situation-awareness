@@ -12,7 +12,7 @@ from sequence import TextSequence
 
 def process():
     print("Loading tweets...")
-    features, labels = utils.read_datasets()
+    features, labels = utils.load_datasets()
     features = preprocess.clear_tweets(features)
     tweets_tr, tweets_dev, labels_tr, labels_dev = train_test_split(
         features, labels, test_size=0.10

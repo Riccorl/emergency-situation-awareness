@@ -36,17 +36,17 @@ def lookup_tweets(tweet_ids: List, api: tweepy.API, path_outputh: str):
     """
     tweet_count = len(tweet_ids)
     with open(path_outputh, mode="w", encoding="utf8") as out_file:
-        try:
-            for i in range((tweet_count // 100) + 1):
-                end_loc = min((i + 1) * 100, tweet_count)
+        for i in range((tweet_count // 100) + 1):
+            end_loc = min((i + 1) * 100, tweet_count)
+            try:
                 full_tweets = api.statuses_lookup(
                     id_=tweet_ids[i * 100 : end_loc], tweet_mode="extended"
                 )
                 out_file.writelines(
                     _fast_clean_tweet(t) + "\n" for t in full_tweets if t
                 )
-        except tweepy.TweepError:
-            print("Something went wrong, quitting...")
+            except tweepy.TweepError as e:
+                print("Something went wrong, error:", e)
 
 
 def _read_tweet_ids(path_input: str):

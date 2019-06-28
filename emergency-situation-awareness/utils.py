@@ -11,6 +11,17 @@ from nltk.corpus import stopwords
 import config
 
 
+def read_dataset(filename: str) -> List[str]:
+    """
+    Read the dataset line by line.
+    :param filename: file to read
+    :return: a list of lines
+    """
+    with open(filename, encoding="utf8") as file:
+        f = (line.strip() for line in file)
+        return [line for line in f if line]
+
+
 def write_dataset(filename: str, lines: List[str]):
     """
     Writes a list of string in a file.
@@ -44,7 +55,17 @@ def write_dictionary(filename: str, dictionary: Dict):
             file.write(k + "\t" + "\t".join(v[0]) + "\n")
 
 
-def read_datasets() -> Tuple[List[str], List[int]]:
+def merge_txt_files(input_file: List[str], output_filename: str):
+    """
+    Merge the given text files.
+    :param input_file: list of strings.
+    :param output_filename: filename of the output file
+    """
+    with open(output_filename, "w", encoding="utf8") as out_file:
+        out_file.writelines(line + "\n" for line in input_file)
+
+
+def load_datasets() -> Tuple[List[str], List[int]]:
     """
     This method is used to handle all datasets path to read.
     :return: a list of tweets
@@ -215,20 +236,36 @@ def restrict_w2v(w2v, restricted_word_set):
         word = w2v.index2entity[i]
         vec = w2v.vectors[i]
         vocab = w2v.vocab[word]
-        # vec_norm = w2v.vectors_norm[i]
+        if w2v.vectors_norm:
+            vec_norm = w2v.vectors_norm[i]
         if word in restricted_word_set:
             vocab.index = len(new_index2entity)
             new_index2entity.append(word)
             new_vocab[word] = vocab
             new_vectors.append(vec)
-            # new_vectors_norm.append(vec_norm)
+            if vec_norm:
+                new_vectors_norm.append(vec_norm)
 
     w2v.vocab = new_vocab
     w2v.vectors = np.array(new_vectors)
     w2v.index2entity = np.array(new_index2entity)
     w2v.index2word = np.array(new_index2entity)
-    # w2v.vectors_norm = np.array(new_vectors_norm)
+    if new_vectors_norm:
+        w2v.vectors_norm = np.array(new_vectors_norm)
     return w2v
+
+
+def clean_embeddings(path_input: str, path_output: str, size: int):
+    """
+    Clean embeddings by removing non lemma_synset vectors.
+    :param path_input: path to original embeddings.
+    :param path_output: path to cleaned embeddings.
+    :return:
+    """
+    old_emb = read_dataset(path_input)
+    filtered = [vector for vector in old_emb if "_bn:" in vector]
+    write_dataset(path_output, [str(len(filtered)) + " " + str(size)] + filtered)
+
 
 
 def timer(start: float, end: float) -> str:
