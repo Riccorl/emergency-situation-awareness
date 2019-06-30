@@ -36,7 +36,7 @@ def vocab_from_w2v(word2vec: gensim.models.word2vec.Word2Vec) -> Dict[str, int]:
     return vocab
 
 
-def clear_tweets(tweets: List[str]) -> List[List[str]]:
+def clear_tweets(tweets: List[str]) -> List:
     """
     Clear list of tweets.
     :param tweets: list of tweets.
@@ -59,7 +59,7 @@ def _clear_tweet(tweet: str, tokenizer, stops: Set, html_regex) -> List:
     return [word for word in tokenizer.tokenize(tweet.lower()) if word not in stops and not html_regex.search(word)]
 
 
-def _compute_x(
+def compute_x(
     features, vocab: Dict[str, int], max_len: int = 200, pad: bool = True
 ) -> np.ndarray:
     """
@@ -108,6 +108,6 @@ def batch_generator(
                 # truncate the sequence
                 max_len = max_len if max_len < max_input_len else max_input_len
 
-            X_batch = _compute_x(features[start:end], vocab, max_len=max_len)
+            X_batch = compute_x(features[start:end], vocab, max_len=max_len)
             y_batch = np.array(labels[start:end])
             yield X_batch, y_batch

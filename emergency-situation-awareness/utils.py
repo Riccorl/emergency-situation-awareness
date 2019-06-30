@@ -11,7 +11,7 @@ from nltk.corpus import stopwords
 import config
 
 
-def read_dataset(filename: str) -> List[str]:
+def read_txt(filename: str) -> List[str]:
     """
     Read the dataset line by line.
     :param filename: file to read
@@ -22,7 +22,7 @@ def read_dataset(filename: str) -> List[str]:
         return [line for line in f if line]
 
 
-def write_dataset(filename: str, lines: List[str]):
+def write_txt(filename: str, lines: List[str]):
     """
     Writes a list of string in a file.
     :param filename: path where to save the file.
@@ -51,8 +51,8 @@ def write_dictionary(filename: str, dictionary: Dict):
     :return:
     """
     with open(filename, mode="w") as file:
-        for k, *v in dictionary.items():
-            file.write(k + "\t" + "\t".join(v[0]) + "\n")
+        for k, v in dictionary.items():
+            file.write(k + " " + str(v) + "\n")
 
 
 def merge_txt_files(input_file: List[str], output_filename: str):
@@ -65,31 +65,31 @@ def merge_txt_files(input_file: List[str], output_filename: str):
         out_file.writelines(line + "\n" for line in input_file)
 
 
-def load_datasets() -> Tuple[List[str], List[int]]:
+def load_datasets(crisis_path, normal_path, limit: int = 30000) -> Tuple[List[str], List[int]]:
     """
     This method is used to handle all datasets path to read.
     :return: a list of tweets
     """
     # parse crisis tweets
-    crisis_tweets = read_crisisnlp() + read_crisilex()
+    crisis_tweets = read_datasets(crisis_path, limit)
     crisis_tweets_label = [1] * len(crisis_tweets)
     print("Number of crisis tweets:", len(crisis_tweets))
 
     # parse non-crisis tweets
-    normal_tweets = read_normal()
+    normal_tweets = read_datasets(normal_path, limit)
     normal_tweets_label = [0] * len(normal_tweets)
     print("Number of non-crisis tweets:", len(normal_tweets))
     return crisis_tweets + normal_tweets, crisis_tweets_label + normal_tweets_label
 
 
-def read_crisisnlp() -> List[str]:
+def read_datasets(path, limit: int = 30000) -> List[str]:
     """
     Read crisis tweets from crisisnlp folder.
     :return: list of tweets.
     """
     tweets = []
-    for file in config.CRISISNLP_DIR.glob("./*.csv"):
-        tweets += _read_csv(file)
+    for file in path.glob("./*.txt"):
+        tweets += read_txt(file)[:limit]
     return tweets
 
 
@@ -110,7 +110,7 @@ def read_normal() -> List[str]:
     :return: list of tweets.
     """
     tweets = []
-    for file in list(config.NORMAL_DIR.glob("./*.csv"))[:6]:
+    for file in list(config.NORMAL_TRAIN_DIR.glob("./*.csv"))[:13]:
         tweets += _read_csv(file)
     return tweets
 
@@ -139,7 +139,7 @@ def _read_crisislex_csv(filename) -> List[str]:
         return [row[1] for row in csv_reader]
 
 
-def split_dataset(filename: str, n_split: int):
+def split_csv(filename: str, n_split: int):
     """
     Split a large text file in smaller files.
     :param filename: file to split.
@@ -151,14 +151,31 @@ def split_dataset(filename: str, n_split: int):
         csv_reader = csv.reader(csv_file, delimiter=",")
         next(csv_reader)
         for row in csv_reader:
-            data.append(" ".join(row))
+            data.append(row[-1])
 
     batch = len(data) // n_split
     for i in range(0, len(data), batch):
         j = i + batch
-        filename_batch = str(filename).split(".")[0] + "_" + str(n_split) + ".csv"
+        filename_batch = str(filename).split(".")[0] + "_" + str(n_split) + ".txt"
         print("Writing", filename_batch)
-        write_dataset(filename_batch, data[i:j])
+        write_txt(filename_batch, data[i:j])
+        n_split -= 1
+
+
+def split_txt(filename: str, n_split: int):
+    """
+    Split a large text file in smaller files.
+    :param filename: file to split.
+    :param n_split: number of parts to split.
+    :return:
+    """
+    data = read_txt(filename)
+    batch = len(data) // n_split
+    for i in range(0, len(data), batch):
+        j = i + batch
+        filename_batch = str(filename).split(".")[0] + "_" + str(n_split) + ".txt"
+        print("Writing", filename_batch)
+        write_txt(filename_batch, data[i:j])
         n_split -= 1
 
 
@@ -236,8 +253,7 @@ def restrict_w2v(w2v, restricted_word_set):
         word = w2v.index2entity[i]
         vec = w2v.vectors[i]
         vocab = w2v.vocab[word]
-        if w2v.vectors_norm:
-            vec_norm = w2v.vectors_norm[i]
+        vec_norm = w2v.vectors_norm[i] if w2v.vectors_norm else []
         if word in restricted_word_set:
             vocab.index = len(new_index2entity)
             new_index2entity.append(word)
@@ -260,12 +276,12 @@ def clean_embeddings(path_input: str, path_output: str, size: int):
     Clean embeddings by removing non lemma_synset vectors.
     :param path_input: path to original embeddings.
     :param path_output: path to cleaned embeddings.
+    :param size:
     :return:
     """
-    old_emb = read_dataset(path_input)
+    old_emb = read_txt(path_input)
     filtered = [vector for vector in old_emb if "_bn:" in vector]
-    write_dataset(path_output, [str(len(filtered)) + " " + str(size)] + filtered)
-
+    write_txt(path_output, [str(len(filtered)) + " " + str(size)] + filtered)
 
 
 def timer(start: float, end: float) -> str:
