@@ -65,7 +65,9 @@ def merge_txt_files(input_file: List[str], output_filename: str):
         out_file.writelines(line + "\n" for line in input_file)
 
 
-def load_datasets(crisis_path, normal_path, limit: int = 30000) -> Tuple[List[str], List[int]]:
+def load_datasets(
+    crisis_path, normal_path, limit: int = 30000
+) -> Tuple[List[str], List[int]]:
     """
     This method is used to handle all datasets path to read.
     :return: a list of tweets
@@ -282,6 +284,15 @@ def clean_embeddings(path_input: str, path_output: str, size: int):
     old_emb = read_txt(path_input)
     filtered = [vector for vector in old_emb if "_bn:" in vector]
     write_txt(path_output, [str(len(filtered)) + " " + str(size)] + filtered)
+
+
+def flatten(input_list: List[List[str]]) -> List[str]:
+    """
+    This method is used to flat a list
+    :param input_list: list to flat
+    :return: flatted list
+    """
+    return [" ".join(elem) for elem in input_list]
 
 
 def timer(start: float, end: float) -> str:

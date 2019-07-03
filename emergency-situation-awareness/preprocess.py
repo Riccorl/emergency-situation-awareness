@@ -1,13 +1,14 @@
 import re
 import string
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 
 import gensim
 import numpy as np
-from keras_preprocessing.text import maketrans
 from nltk.corpus import stopwords
-from tensorflow.python.keras.preprocessing.sequence import pad_sequences
 from nltk.tokenize import TweetTokenizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from tensorflow.python.keras.preprocessing.sequence import pad_sequences
+import utils
 
 
 def build_vocab(data: List[List[str]]) -> Dict[str, int]:
@@ -56,7 +57,11 @@ def _clear_tweet(tweet: str, tokenizer, stops: Set, html_regex) -> List:
     :param stops: set of stop words and punctuation to remove.
     :return: tweet cleaned.
     """
-    return [word for word in tokenizer.tokenize(tweet.lower()) if word not in stops and not html_regex.search(word)]
+    return [
+        word
+        for word in tokenizer.tokenize(tweet.lower())
+        if word not in stops and not html_regex.search(word)
+    ]
 
 
 def compute_x(
@@ -111,3 +116,19 @@ def batch_generator(
             X_batch = compute_x(features[start:end], vocab, max_len=max_len)
             y_batch = np.array(labels[start:end])
             yield X_batch, y_batch
+
+
+def tf_idf_conversion(
+    train_x: List[List[str]], max_features: int = None
+) -> Tuple[List[List[int]], TfidfVectorizer]:
+    """
+    This method is used to map each sentences entry with tf-idf format
+    :param train_x: input sentences
+    :param max_features: number of maximun features to taking into account
+    :return: coverted sentences, tf-idf distribution
+    """
+
+    train_x = utils.flatten(train_x)
+    tfidf_vect = TfidfVectorizer(max_features=max_features, lowercase=False)
+    tfidf_vect.fit(train_x)
+    return tfidf_vect.transform(train_x), tfidf_vect
