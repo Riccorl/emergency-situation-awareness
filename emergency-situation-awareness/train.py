@@ -2,9 +2,9 @@ import time
 from typing import List, Tuple, Dict, Optional
 
 import gensim
-import sklearn
 import tensorflow as tf
 from gensim.models import Word2Vec
+from sklearn import naive_bayes, svm
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 import config
@@ -101,9 +101,7 @@ def _process_keras(
     return data_vocab, w2v, w2v_vocab
 
 
-def train_bayes(
-    train_x: List[List[str]], train_y: List[List[str]]
-) -> Tuple[sklearn.naive_bayes.MultinomialNB, TfidfVectorizer]:
+def train_bayes(train_x: List[List[str]], train_y: List[List[str]]):
     """
     This method is used to train a naive bayes classifier
     :param train_x: input train
@@ -113,7 +111,7 @@ def train_bayes(
 
     train_x, tfidf_vec = _process_linear(train_x)
 
-    naive = sklearn.naive_bayes.MultinomialNB()
+    naive = naive_bayes.MultinomialNB()
     naive.fit(train_x, train_y)
 
     return naive, tfidf_vec
@@ -127,7 +125,7 @@ def train_svm(
     degree: int = 3,
     gamma: str = "auto",
     max_iter: int = 1000,
-) -> Tuple[sklearn.svm.SVC, TfidfVectorizer]:
+):
     """
     Thise method is used to train a SVM classifier
     :param train_x: input train
@@ -141,11 +139,11 @@ def train_svm(
     """
 
     train_x, tfidf_vec = _process_linear(train_x)
-    svm = sklearn.svm.SVC(
+    svm_model = svm.SVC(
         C=c, kernel=kernel, degree=degree, gamma=gamma, max_iter=max_iter, verbose=True
     )
-    svm.fit(train_x, train_y)
-    return svm, tfidf_vec
+    svm_model.fit(train_x, train_y)
+    return svm_model, tfidf_vec
 
 
 def _process_linear(

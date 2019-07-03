@@ -26,11 +26,11 @@ def main():
 
     print("Training Naive Bayes...")
     model, tfidf_vec = train.train_bayes(train_x, train_y)
-    evaluation.evaluate_sklearn(model, tfidf_vec)
+    evaluation.evaluate_sklearn(model, tfidf_vec, kind_model="Naive Bayes")
 
     print("Training Svm...")
     model, tfidf_vec = train.train_svm(train_x, train_y)
-    evaluation.evaluate_sklearn(model, tfidf_vec)
+    evaluation.evaluate_sklearn(model, tfidf_vec, kind_model="Svm")
 
 
 if __name__ == "__main__":
