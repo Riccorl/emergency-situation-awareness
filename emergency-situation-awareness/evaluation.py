@@ -1,7 +1,16 @@
+import matplotlib.pyplot as plt
+import numpy as np
 import sklearn
 import tensorflow as tf
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    fbeta_score,
+    make_scorer,
+)
+from sklearn.model_selection import cross_validate
 
 import config
 import preprocess
@@ -62,6 +71,23 @@ def evaluate_sklearn(model, tfidf_vec: TfidfVectorizer, kind_model: str = None) 
     print("Accuracy Score:", accuracy_score(y_pred, y_test) * 100)
     cr = classification_report(y_test, y_pred, ["normal", "crisis"])
     print("Classification report : \n", cr)
+
+
+def plot(x, y, estimator, cv):
+    title = "Learning Curves"
+    # Cross validation with 100 iterations to get smoother mean test and train
+    # score curves, each time with 20% data randomly selected as a validation set.
+    utils.plot_learning_curve(
+        estimator,
+        title,
+        x,
+        y,
+        ylim=(0.7, 1.01),
+        cv=cv,
+        n_jobs=-1,
+        train_sizes=np.linspace(0.01, 1.0, 10),
+    )
+    plt.show()
 
 
 if __name__ == "__main__":

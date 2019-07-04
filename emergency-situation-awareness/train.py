@@ -2,12 +2,23 @@ import time
 from typing import List, Tuple, Dict, Optional
 
 import gensim
+import numpy as np
+import sklearn
 import tensorflow as tf
 from gensim.models import Word2Vec
 from sklearn import naive_bayes, svm
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    fbeta_score,
+    make_scorer,
+)
+from sklearn.model_selection import cross_validate, KFold, train_test_split
 
 import config
+import evaluation
 import models
 import preprocess
 import utils
@@ -15,10 +26,8 @@ from sequence import TextSequence
 
 
 def train_keras(
-    tweets_tr: List[str],
-    tweets_dev: List[str],
-    labels_tr: List[str],
-    labels_dev: List[str],
+    features: List[str],
+    labels: List[int],
     path_embeddings: str,
     epochs: int = 5,
     hidden_size: int = 100,
@@ -26,16 +35,18 @@ def train_keras(
 ) -> models:
     """
     This method is used to train the keras method
-    :param tweets_tr: input train
-    :param tweets_dev: input development set
-    :param labels_tr: label train
-    :param labels_dev: label development set
+    :param features: input train
+    :param labels: label train
     :param path_embeddings: path of pre-trained embeddings
     :param epochs: number of epochs
     :param hidden_size: number of hidden size
     :param batch_size: number of batch size
     :return: keras model
     """
+
+    tweets_tr, tweets_dev, labels_tr, labels_dev = train_test_split(
+        features, labels, test_size=0.10
+    )
     vocab, w2v, w2v_vocab = _process_keras(tweets_tr, tweets_dev, path_embeddings)
 
     train_gen = TextSequence(
@@ -101,47 +112,36 @@ def _process_keras(
     return data_vocab, w2v, w2v_vocab
 
 
-def train_bayes(train_x: List[List[str]], train_y: List[List[str]]):
+def train_bayes(train_x: List[List[str]], train_y: List[int]):
     """
     This method is used to train a naive bayes classifier
     :param train_x: input train
     :param train_y: label train
     :return: naive bayes model, tf-idf distribution
     """
-
+    train_x, train_y = sklearn.utils.shuffle(train_x, train_y)
     train_x, tfidf_vec = _process_linear(train_x)
-
     naive = naive_bayes.MultinomialNB()
+    _train_linear(naive, train_x, train_y)
     naive.fit(train_x, train_y)
-
     return naive, tfidf_vec
 
 
 def train_svm(
-    train_x: List[List[str]],
-    train_y: List[List[str]],
-    c: int = 1.0,
-    kernel: str = "linear",
-    degree: int = 3,
-    gamma: str = "auto",
-    max_iter: int = 1000,
+    train_x: List[List[str]], train_y: List[int], c: int = 1.0, max_iter: int = 1000
 ):
     """
     Thise method is used to train a SVM classifier
     :param train_x: input train
     :param train_y: label train
     :param c: penalty parameter C of the error term.
-    :param kernel: specifies the kernel type to be used in the algorithm.
-    :param degree: degree of the polynomial kernel function
-    :param gamma: kernel coefficient for 'rbf', 'poly' and 'sigmoid'.
     :param max_iter: number of maximum iteration
     :return: SVM model, tf-idf distribution
     """
-
+    train_x, train_y = sklearn.utils.shuffle(train_x, train_y)
     train_x, tfidf_vec = _process_linear(train_x)
-    svm_model = svm.SVC(
-        C=c, kernel=kernel, degree=degree, gamma=gamma, max_iter=max_iter, verbose=True
-    )
+    svm_model = svm.LinearSVC(C=c, max_iter=max_iter)
+    _train_linear(svm_model, train_x, train_y)
     svm_model.fit(train_x, train_y)
     return svm_model, tfidf_vec
 
@@ -155,3 +155,39 @@ def _process_linear(
     :return: tf-idf sentences conversion, tf-idf distribution
     """
     return preprocess.tf_idf_conversion(train_x)
+
+
+def _train_linear(model, train_x, train_y):
+    scoring = {
+        "accuracy": make_scorer(accuracy_score),
+        "precision": make_scorer(precision_score, pos_label=1),
+        "recall": make_scorer(recall_score, pos_label=1),
+        "f1": make_scorer(fbeta_score, beta=1, pos_label=1),
+    }
+    start = time.time()
+    kfold = KFold(10, True, 1)
+    accuracy, precision, recall, fscore = validation(
+        train_x, train_y, model, kfold, scoring
+    )
+    end = time.time()
+    print("Accuracy: {0:.2f}".format(accuracy))
+    print("Precision: {0:.2f}".format(precision))
+    print("Recall: {0:.2f}".format(recall))
+    print("F1 score: {0:.2f}".format(fscore))
+    print("Execution Time: " + utils.timer(start, end))
+    print("")
+    print("Plotting learning curve...")
+    evaluation.plot(train_x, train_y, model, kfold)
+    print("Done.")
+
+
+def validation(train_x, train_y, estimator, cv, scoring):
+    scores = cross_validate(
+        estimator, train_x, train_y, cv=cv, scoring=scoring, n_jobs=-1
+    )
+    return (
+        np.mean(scores["test_accuracy"]),
+        np.mean(scores["test_precision"]),
+        np.mean(scores["test_recall"]),
+        np.mean(scores["test_f1"]),
+    )

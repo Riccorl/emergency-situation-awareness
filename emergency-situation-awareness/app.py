@@ -1,4 +1,4 @@
-from sklearn.model_selection import train_test_split
+import numpy as np
 
 import config
 import evaluation
@@ -10,27 +10,29 @@ import utils
 def preprocessing():
     print("Loading tweets...")
     features, labels = utils.load_datasets(
-        config.CRISIS_TRAIN_DIR, config.NORMAL_TRAIN_DIR
+        config.CRISIS_TRAIN_DIR, config.NORMAL_TRAIN_DIR, limit=30000
     )
     print("Clearing tweets...")
     features = preprocess.clear_tweets(features)
-    return train_test_split(features, labels, test_size=0.10)
+    return features, labels
 
 
 def main():
-    train_x, dev_x, train_y, dev_y = preprocessing()
+    np.random.seed(32)
 
-    print("Training Keras...")
-    model = train.train_keras(train_x, dev_x, train_y, dev_y, config.CRISIS_PRE_TRAINED)
-    evaluation.evaluate_keras(model)
+    train_x, train_y = preprocessing()
+
+    # print("Training Keras...")
+    # model = train.train_keras(train_x, train_y, config.CRISIS_PRE_TRAINED)
+    # evaluation.evaluate_keras(model)
 
     print("Training Naive Bayes...")
     model, tfidf_vec = train.train_bayes(train_x, train_y)
     evaluation.evaluate_sklearn(model, tfidf_vec, kind_model="Naive Bayes")
 
-    print("Training Svm...")
+    print("Training SVM...")
     model, tfidf_vec = train.train_svm(train_x, train_y)
-    evaluation.evaluate_sklearn(model, tfidf_vec, kind_model="Svm")
+    evaluation.evaluate_sklearn(model, tfidf_vec, kind_model="SVM")
 
 
 if __name__ == "__main__":

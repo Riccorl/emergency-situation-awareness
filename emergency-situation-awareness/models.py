@@ -1,7 +1,6 @@
 import gensim
 import numpy as np
 import tensorflow as tf
-import tensorflow_hub as tf_hub
 from tensorflow import keras
 from tensorflow.python.keras import Model
 from tensorflow.python.keras import backend as K
