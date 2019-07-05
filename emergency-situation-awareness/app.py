@@ -21,7 +21,7 @@ def main():
     np.random.seed(32)
 
     train_x, train_y = preprocessing()
-
+    utils.plot_space(train_x[0:40] + train_x[300000:300040], train_y[0:40] + train_y[300000:300040])
     # print("Training Keras...")
     # model = train.train_keras(train_x, train_y, config.CRISIS_PRE_TRAINED)
     # print("Evaluate Keras...")

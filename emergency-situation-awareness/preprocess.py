@@ -6,8 +6,11 @@ import gensim
 import numpy as np
 from keras_preprocessing.text import maketrans
 from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import TfidfVectorizer
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
 from nltk.tokenize import TweetTokenizer
+
+import utils
 
 
 def build_vocab(data: List[List[str]]) -> Dict[str, int]:

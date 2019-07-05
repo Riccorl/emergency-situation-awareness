@@ -8,7 +8,9 @@ import matplotlib.pyplot as plt
 import gensim
 import nltk
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 from nltk.corpus import stopwords
+from sklearn.decomposition import TruncatedSVD
 from sklearn.model_selection import learning_curve
 
 import config
@@ -296,9 +298,7 @@ def w2v_txt_to_bin(path_input: str, path_output: str):
     :param path_output:
     :return:
     """
-    w2v = gensim.models.KeyedVectors.load_word2vec_format(
-        path_input, binary=False
-    )
+    w2v = gensim.models.KeyedVectors.load_word2vec_format(path_input, binary=False)
     w2v.save_word2vec_format(path_output, binary=True)
 
 
@@ -314,7 +314,7 @@ def flatten(input_list: List[List[str]]) -> List[str]:
 def plot_learning_curve(
     estimator,
     title,
-    X,
+    x,
     y,
     ylim=None,
     cv=None,
@@ -329,7 +329,7 @@ def plot_learning_curve(
         An object of that type which is cloned for each validation.
     title : string
         Title for the chart.
-    X : array-like, shape (n_samples, n_features)
+    x : array-like, shape (n_samples, n_features)
         Training vector, where n_samples is the number of samples and
         n_features is the number of features.
     y : array-like, shape (n_samples) or (n_samples, n_features), optional
@@ -371,7 +371,7 @@ def plot_learning_curve(
     plt.xlabel("Training examples")
     plt.ylabel("Score")
     train_sizes, train_scores, test_scores = learning_curve(
-        estimator, X, y, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes
+        estimator, x, y, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes
     )
     train_scores_mean = np.mean(train_scores, axis=1)
     train_scores_std = np.std(train_scores, axis=1)
@@ -401,6 +401,13 @@ def plot_learning_curve(
     plt.legend(loc="best")
     fig.savefig("plot.png")
     return plt
+
+
+def plot_space(x, y):
+    data_2d = TruncatedSVD(n_components=2, n_iter=100, random_state=42).fit_transform(x)
+    plt.scatter(data_2d[:, 0], data_2d[:, 1], c=y)
+
+    plt.show()
 
 
 def timer(start: float, end: float) -> str:
