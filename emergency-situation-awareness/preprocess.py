@@ -6,7 +6,7 @@ import gensim
 import numpy as np
 from nltk.corpus import stopwords
 from nltk.tokenize import TweetTokenizer
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
 import utils
 
@@ -113,9 +113,9 @@ def batch_generator(
                 # truncate the sequence
                 max_len = max_len if max_len < max_input_len else max_input_len
 
-            X_batch = compute_x(features[start:end], vocab, max_len=max_len)
+            x_batch = compute_x(features[start:end], vocab, max_len=max_len)
             y_batch = np.array(labels[start:end])
-            yield X_batch, y_batch
+            yield x_batch, y_batch
 
 
 def tf_idf_conversion(
@@ -130,5 +130,5 @@ def tf_idf_conversion(
 
     train_x = utils.flatten(train_x)
     tfidf_vect = TfidfVectorizer(max_features=max_features, lowercase=False)
-    tfidf_vect.fit(train_x)
-    return tfidf_vect.transform(train_x), tfidf_vect
+    train_x_tfidf = tfidf_vect.fit_transform(train_x)
+    return train_x_tfidf, tfidf_vect

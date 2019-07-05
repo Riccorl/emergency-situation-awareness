@@ -3,14 +3,7 @@ import numpy as np
 import sklearn
 import tensorflow as tf
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import (
-    accuracy_score,
-    precision_score,
-    recall_score,
-    fbeta_score,
-    make_scorer,
-)
-from sklearn.model_selection import cross_validate
+from sklearn.metrics import accuracy_score
 
 import config
 import preprocess
@@ -74,6 +67,14 @@ def evaluate_sklearn(model, tfidf_vec: TfidfVectorizer, kind_model: str = None) 
 
 
 def plot(x, y, estimator, cv):
+    """
+    Plot the learning curve.
+    :param x: features.
+    :param y: labels.
+    :param estimator:
+    :param cv:
+    :return:
+    """
     title = "Learning Curves"
     # Cross validation with 100 iterations to get smoother mean test and train
     # score curves, each time with 20% data randomly selected as a validation set.

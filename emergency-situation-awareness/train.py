@@ -16,6 +16,7 @@ from sklearn.metrics import (
     make_scorer,
 )
 from sklearn.model_selection import cross_validate, KFold, train_test_split
+from sklearn.preprocessing import StandardScaler
 
 import config
 import evaluation
@@ -119,16 +120,17 @@ def train_bayes(train_x: List[List[str]], train_y: List[int]):
     :param train_y: label train
     :return: naive bayes model, tf-idf distribution
     """
-    train_x, train_y = sklearn.utils.shuffle(train_x, train_y)
-    train_x, tfidf_vec = _process_linear(train_x)
-    naive = naive_bayes.MultinomialNB()
+    train_x, train_y, tfidf_vec = _process_linear(train_x, train_y)
+    naive = naive_bayes.BernoulliNB()
+    print("\nCross Validation...")
     _train_linear(naive, train_x, train_y)
+    print("\nFitting...")
     naive.fit(train_x, train_y)
     return naive, tfidf_vec
 
 
 def train_svm(
-    train_x: List[List[str]], train_y: List[int], c: int = 1.0, max_iter: int = 1000
+    train_x: List[List[str]], train_y: List[int], c: int = 1.0, max_iter: int = 2000
 ):
     """
     Thise method is used to train a SVM classifier
@@ -138,23 +140,31 @@ def train_svm(
     :param max_iter: number of maximum iteration
     :return: SVM model, tf-idf distribution
     """
-    train_x, train_y = sklearn.utils.shuffle(train_x, train_y)
-    train_x, tfidf_vec = _process_linear(train_x)
+    train_x, train_y, tfidf_vec = _process_linear(train_x, train_y)
+    print("Standard Scaler...")
+    scaler = StandardScaler(with_mean=False)
+    scaler.fit(train_x)
+    train_x = scaler.transform(train_x)
     svm_model = svm.LinearSVC(C=c, max_iter=max_iter)
+    # svm_model = svm.SVC(kernel="poly", degree=3, gamma="auto", C=c, max_iter=max_iter)
+    print("\nCross Validation...")
     _train_linear(svm_model, train_x, train_y)
+    print("\nFitting...")
     svm_model.fit(train_x, train_y)
     return svm_model, tfidf_vec
 
 
 def _process_linear(
-    train_x: List[List[str]]
-) -> Tuple[List[List[int]], TfidfVectorizer]:
+    train_x: List[List[str]], train_y: List[int]
+) -> Tuple[List[List[int]], List[int], TfidfVectorizer]:
     """
     This method is used to process the sentences with respect to a sklearn model
     :param train_x: input train
     :return: tf-idf sentences conversion, tf-idf distribution
     """
-    return preprocess.tf_idf_conversion(train_x)
+    train_x, train_y = sklearn.utils.shuffle(train_x, train_y)
+    train_x, tfidf_vect = preprocess.tf_idf_conversion(train_x)
+    return train_x, train_y, tfidf_vect
 
 
 def _train_linear(model, train_x, train_y):

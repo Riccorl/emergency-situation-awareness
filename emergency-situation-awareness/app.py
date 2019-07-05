@@ -24,15 +24,18 @@ def main():
 
     # print("Training Keras...")
     # model = train.train_keras(train_x, train_y, config.CRISIS_PRE_TRAINED)
+    # print("Evaluate Keras...")
     # evaluation.evaluate_keras(model)
 
     print("Training Naive Bayes...")
     model, tfidf_vec = train.train_bayes(train_x, train_y)
+    print("Evaluate Bayes...")
     evaluation.evaluate_sklearn(model, tfidf_vec, kind_model="Naive Bayes")
 
-    print("Training SVM...")
-    model, tfidf_vec = train.train_svm(train_x, train_y)
-    evaluation.evaluate_sklearn(model, tfidf_vec, kind_model="SVM")
+    # print("Training SVM...")
+    # model, tfidf_vec = train.train_svm(train_x, train_y)
+    # print("Evaluate SVM...")
+    # evaluation.evaluate_sklearn(model, tfidf_vec, kind_model="SVM")
 
 
 if __name__ == "__main__":
