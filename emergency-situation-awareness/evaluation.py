@@ -11,6 +11,8 @@ from sklearn.metrics import (
     make_scorer,
 )
 from sklearn.model_selection import cross_validate
+from sklearn.decomposition import TruncatedSVD
+from mpl_toolkits.mplot3d import Axes3D
 
 import config
 import preprocess
@@ -88,6 +90,16 @@ def plot(x, y, estimator, cv):
         train_sizes=np.linspace(0.01, 1.0, 10),
     )
     plt.show()
+
+def plot_space(x,y):
+  fig = plt.figure()
+  ax = Axes3D(fig)
+    
+  svd = TruncatedSVD(n_components=3, n_iter=100, random_state=42).fit(x)
+  data3D = svd.transform(x)
+  ax.scatter(data3D[:,0], data3D[:,1],data3D[:,2], c=y)
+
+  plt.show()  
 
 
 if __name__ == "__main__":
