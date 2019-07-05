@@ -7,13 +7,14 @@ from tensorflow.python.keras.utils import Sequence
 
 class TextSequence(Sequence):
     def __init__(
-        self, x_set, y_set, batch_size, vocab, max_len, num_classes: int = None
+        self, x_set, y_set, batch_size, vocab, max_len, num_classes: int = None, pad: bool = True
     ):
         self.x, self.y = x_set, y_set
         self.batch_size = batch_size
         self.num_classes = num_classes
         self.vocab = vocab
         self.max_len = max_len
+        self.pad = pad
 
     def __len__(self):
         return int(np.ceil(len(self.x) / float(self.batch_size)))
@@ -23,6 +24,7 @@ class TextSequence(Sequence):
             self.x[idx * self.batch_size : (idx + 1) * self.batch_size],
             self.vocab,
             max_len=self.max_len,
+            pad=self.pad
         )
         batch_y = np.array(self.y[idx * self.batch_size : (idx + 1) * self.batch_size])
 

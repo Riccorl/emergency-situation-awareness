@@ -45,10 +45,14 @@ def train_keras(
     :return: keras model
     """
 
+    config_tf = tf.ConfigProto()
+    config_tf.gpu_options.allow_growth = True
+    tf.keras.backend.set_session(tf.Session(config=config_tf))
+
     tweets_tr, tweets_dev, labels_tr, labels_dev = train_test_split(
-        features, labels, test_size=0.10
+        features, labels, test_size=0.20
     )
-    vocab, w2v, w2v_vocab = _process_keras(tweets_tr, tweets_dev, path_embeddings)
+    vocab, w2v, w2v_vocab = _process_keras(tweets_tr, labels_tr, path_embeddings)
 
     train_gen = TextSequence(
         tweets_tr, labels_tr, vocab=w2v_vocab, batch_size=batch_size, max_len=100
@@ -87,23 +91,27 @@ def train_keras(
 
 
 def _process_keras(
-    features_train: List[str], features_dev: List[str], path_embeddings: str
+    features_train: List[str], labels: List[int], path_embeddings: str
 ) -> Tuple[Dict[str, int], Optional[Word2Vec], Dict[str, int]]:
     """
     This method is used to process the sentences with respect to a keras model
     :param features_train: input train
-    :param features_dev: input development set
+    :param labels: label set.
     :param path_embeddings: path of pre-trained embeddings
     :return: vocabulary, word2vec model, word2vec vocabulary
     """
     print("Loading pre-trained embeddings...")
     # load the w2v matrix with genism
     w2v = gensim.models.KeyedVectors.load_word2vec_format(path_embeddings, binary=True)
+    for i, t in enumerate(features_train):
+        if not t:
+            del features_train[i]
+            del labels[i]
     # build the vocab from the w2v model
     w2v_vocab = preprocess.vocab_from_w2v(w2v)
     print("Word2Vec model vocab len:", len(w2v_vocab))
     # build vocab from the dataset
-    data_vocab = preprocess.build_vocab([features_train, features_dev])
+    data_vocab = preprocess.build_vocab([features_train])
     # filter pretrained w2v with words from the dataset
     w2v = utils.restrict_w2v(w2v, set(data_vocab.keys()))
     w2v_vocab = preprocess.vocab_from_w2v(w2v)

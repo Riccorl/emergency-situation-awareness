@@ -16,6 +16,8 @@ NORMAL_EVAL_DIR = EVAL_DIR / "normal"
 
 # embeddings
 CRISIS_PRE_TRAINED = RES_DIR / "embeddings" / "crisisNLP_emb.bin"
+GLOVE_PRE_TRAINED_TXT = RES_DIR / "embeddings" / "glove.twitter.27B.200d.txt"
+GLOVE_PRE_TRAINED = RES_DIR / "embeddings" / "glove.twitter.27B.200d.bin"
 
 # vocabs
 TRAIN_VOCAB = VOCABS_DIR / "train_vocab.txt"

@@ -4,11 +4,10 @@ from typing import Dict, List, Set, Tuple
 
 import gensim
 import numpy as np
+from keras_preprocessing.text import maketrans
 from nltk.corpus import stopwords
-from nltk.tokenize import TweetTokenizer
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
-import utils
+from nltk.tokenize import TweetTokenizer
 
 
 def build_vocab(data: List[List[str]]) -> Dict[str, int]:
@@ -57,11 +56,7 @@ def _clear_tweet(tweet: str, tokenizer, stops: Set, html_regex) -> List:
     :param stops: set of stop words and punctuation to remove.
     :return: tweet cleaned.
     """
-    return [
-        word
-        for word in tokenizer.tokenize(tweet.lower())
-        if word not in stops and not html_regex.search(word)
-    ]
+    return [word for word in tokenizer.tokenize(tweet.lower()) if word not in stops and not html_regex.search(word)]
 
 
 def compute_x(
