@@ -11,6 +11,7 @@ from tensorflow.python.keras.layers import (
     LSTM,
     Input,
     Layer,
+    SpatialDropout1D
 )
 
 
@@ -35,20 +36,20 @@ def build_model(
             vocab_size, embedding_size, input_length=input_length, mask_zero=True
         )(input_layer)
     # em = ELMoEmbedding(idx2word=idx2word, output_mode="default", trainable=True)(input_layer)
-
+    dr = SpatialDropout1D(0.6)(em)
     lstm1 = Bidirectional(
         layer(
             units=hidden_size,
-            dropout=dropout,
-            recurrent_dropout=recurrent_dropout,
+            # dropout=dropout,
+            # recurrent_dropout=recurrent_dropout,
             return_sequences=False,
         )
-    )(em)
+    )(dr)
     # lstm2 = Bidirectional(
     #     layer(units=hidden_size, dropout=dropout, recurrent_dropout=recurrent_dropout)
     # )(lstm1)
 
-    dense = Dense(50, activation="relu")(lstm1)
+    dense = Dense(100, activation="relu")(lstm1)
     output = Dense(1, activation="sigmoid")(dense)
     model = Model(inputs=input_layer, outputs=output)
     optimizer = keras.optimizers.Adam()
@@ -79,7 +80,7 @@ def get_keras_embedding(
         input_dim=weights.shape[0],
         output_dim=weights.shape[1],
         weights=[weights],
-        mask_zero=True,
+        mask_zero=False,
         trainable=trainable,
     )
 

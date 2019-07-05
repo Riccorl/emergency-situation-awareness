@@ -16,6 +16,7 @@ from sklearn.metrics import (
     make_scorer,
 )
 from sklearn.model_selection import cross_validate, KFold, train_test_split
+from sklearn.preprocessing import StandardScaler
 
 import config
 import evaluation
@@ -44,10 +45,14 @@ def train_keras(
     :return: keras model
     """
 
+    config_tf = tf.ConfigProto()
+    config_tf.gpu_options.allow_growth = True
+    tf.keras.backend.set_session(tf.Session(config=config_tf))
+
     tweets_tr, tweets_dev, labels_tr, labels_dev = train_test_split(
-        features, labels, test_size=0.10
+        features, labels, test_size=0.20
     )
-    vocab, w2v, w2v_vocab = _process_keras(tweets_tr, tweets_dev, path_embeddings)
+    vocab, w2v, w2v_vocab = _process_keras(tweets_tr, labels_tr, path_embeddings)
 
     train_gen = TextSequence(
         tweets_tr, labels_tr, vocab=w2v_vocab, batch_size=batch_size, max_len=100
@@ -86,23 +91,27 @@ def train_keras(
 
 
 def _process_keras(
-    features_train: List[str], features_dev: List[str], path_embeddings: str
+    features_train: List[str], labels: List[int], path_embeddings: str
 ) -> Tuple[Dict[str, int], Optional[Word2Vec], Dict[str, int]]:
     """
     This method is used to process the sentences with respect to a keras model
     :param features_train: input train
-    :param features_dev: input development set
+    :param labels: label set.
     :param path_embeddings: path of pre-trained embeddings
     :return: vocabulary, word2vec model, word2vec vocabulary
     """
     print("Loading pre-trained embeddings...")
     # load the w2v matrix with genism
     w2v = gensim.models.KeyedVectors.load_word2vec_format(path_embeddings, binary=True)
+    for i, t in enumerate(features_train):
+        if not t:
+            del features_train[i]
+            del labels[i]
     # build the vocab from the w2v model
     w2v_vocab = preprocess.vocab_from_w2v(w2v)
     print("Word2Vec model vocab len:", len(w2v_vocab))
     # build vocab from the dataset
-    data_vocab = preprocess.build_vocab([features_train, features_dev])
+    data_vocab = preprocess.build_vocab([features_train])
     # filter pretrained w2v with words from the dataset
     w2v = utils.restrict_w2v(w2v, set(data_vocab.keys()))
     w2v_vocab = preprocess.vocab_from_w2v(w2v)
@@ -119,16 +128,17 @@ def train_bayes(train_x: List[List[str]], train_y: List[int]):
     :param train_y: label train
     :return: naive bayes model, tf-idf distribution
     """
-    train_x, train_y = sklearn.utils.shuffle(train_x, train_y)
-    train_x, tfidf_vec = _process_linear(train_x)
-    naive = naive_bayes.MultinomialNB()
+    train_x, train_y, tfidf_vec = _process_linear(train_x, train_y)
+    naive = naive_bayes.BernoulliNB()
+    print("\nCross Validation...")
     _train_linear(naive, train_x, train_y)
+    print("\nFitting...")
     naive.fit(train_x, train_y)
     return naive, tfidf_vec
 
 
 def train_svm(
-    train_x: List[List[str]], train_y: List[int], c: int = 1.0, max_iter: int = 1000
+    train_x: List[List[str]], train_y: List[int], c: int = 1.0, max_iter: int = 2000
 ):
     """
     Thise method is used to train a SVM classifier
@@ -138,23 +148,31 @@ def train_svm(
     :param max_iter: number of maximum iteration
     :return: SVM model, tf-idf distribution
     """
-    train_x, train_y = sklearn.utils.shuffle(train_x, train_y)
-    train_x, tfidf_vec = _process_linear(train_x)
+    train_x, train_y, tfidf_vec = _process_linear(train_x, train_y)
+    print("Standard Scaler...")
+    scaler = StandardScaler(with_mean=False)
+    scaler.fit(train_x)
+    train_x = scaler.transform(train_x)
     svm_model = svm.LinearSVC(C=c, max_iter=max_iter)
+    # svm_model = svm.SVC(kernel="poly", degree=3, gamma="auto", C=c, max_iter=max_iter)
+    print("\nCross Validation...")
     _train_linear(svm_model, train_x, train_y)
+    print("\nFitting...")
     svm_model.fit(train_x, train_y)
     return svm_model, tfidf_vec
 
 
 def _process_linear(
-    train_x: List[List[str]]
-) -> Tuple[List[List[int]], TfidfVectorizer]:
+    train_x: List[List[str]], train_y: List[int]
+) -> Tuple[List[List[int]], List[int], TfidfVectorizer]:
     """
     This method is used to process the sentences with respect to a sklearn model
     :param train_x: input train
     :return: tf-idf sentences conversion, tf-idf distribution
     """
-    return preprocess.tf_idf_conversion(train_x)
+    train_x, train_y = sklearn.utils.shuffle(train_x, train_y)
+    train_x, tfidf_vect = preprocess.tf_idf_conversion(train_x)
+    return train_x, train_y, tfidf_vect
 
 
 def _train_linear(model, train_x, train_y):

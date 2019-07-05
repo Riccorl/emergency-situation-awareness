@@ -5,6 +5,7 @@ import zipfile
 from typing import List, Dict, Tuple
 
 import matplotlib.pyplot as plt
+import gensim
 import nltk
 import numpy as np
 from nltk.corpus import stopwords
@@ -286,6 +287,19 @@ def clean_embeddings(path_input: str, path_output: str, size: int):
     old_emb = read_txt(path_input)
     filtered = [vector for vector in old_emb if "_bn:" in vector]
     write_txt(path_output, [str(len(filtered)) + " " + str(size)] + filtered)
+
+
+def w2v_txt_to_bin(path_input: str, path_output: str):
+    """
+
+    :param path_input:
+    :param path_output:
+    :return:
+    """
+    w2v = gensim.models.KeyedVectors.load_word2vec_format(
+        path_input, binary=False
+    )
+    w2v.save_word2vec_format(path_output, binary=True)
 
 
 def flatten(input_list: List[List[str]]) -> List[str]:

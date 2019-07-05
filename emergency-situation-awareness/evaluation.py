@@ -11,8 +11,7 @@ from sklearn.metrics import (
     make_scorer,
 )
 from sklearn.model_selection import cross_validate
-from sklearn.decomposition import TruncatedSVD
-from mpl_toolkits.mplot3d import Axes3D
+from sklearn.metrics import accuracy_score
 
 import config
 import preprocess
@@ -76,6 +75,14 @@ def evaluate_sklearn(model, tfidf_vec: TfidfVectorizer, kind_model: str = None) 
 
 
 def plot(x, y, estimator, cv):
+    """
+    Plot the learning curve.
+    :param x: features.
+    :param y: labels.
+    :param estimator:
+    :param cv:
+    :return:
+    """
     title = "Learning Curves"
     # Cross validation with 100 iterations to get smoother mean test and train
     # score curves, each time with 20% data randomly selected as a validation set.
@@ -90,18 +97,7 @@ def plot(x, y, estimator, cv):
         train_sizes=np.linspace(0.01, 1.0, 10),
     )
     plt.show()
-
-def plot_space(x,y):
-  fig = plt.figure()
-  ax = Axes3D(fig)
     
-  svd = TruncatedSVD(n_components=3, n_iter=100, random_state=42).fit(x)
-  data3D = svd.transform(x)
-  ax.scatter(data3D[:,0], data3D[:,1],data3D[:,2], c=y)
-
-  plt.show()  
-
-
 if __name__ == "__main__":
     model = tf.keras.models.load_model(str(config.OUTPUT_DIR / "model.h5"))
     evaluate_keras(model)
