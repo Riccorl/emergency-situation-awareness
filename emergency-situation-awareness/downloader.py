@@ -12,10 +12,10 @@ def tweet_dowloader(path_input: str, path_outputh: str):
     :param path_outputh: where to save the tweets.
     :return:
     """
-    consumer_key = "bBU4XnEMpraeHwZlK50zAhxK5"
-    consumer_secret = "bOaeDo1HsVphtMnq9xq2tYEAPU28xzju5ss1OM1YicbUmgIU5F"
-    access_token = "224185852-90ENd3QMyKwYujvi32LgJW2qNHoN7fem8S8SXUYS"
-    access_token_secret = "sV8sdardQuy0mce7EGBb6BYUv6URcw8A3xuocjHk2lZyj"
+    consumer_key = "YOUR_KEY"
+    consumer_secret = "YOUR_KEY"
+    access_token = "YOUR_KEY"
+    access_token_secret = "YOUR_KEY"
 
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)

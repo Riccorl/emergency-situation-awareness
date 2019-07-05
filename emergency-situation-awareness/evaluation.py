@@ -1,16 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import sklearn
-import tensorflow as tf
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import (
-    accuracy_score,
-    precision_score,
-    recall_score,
-    fbeta_score,
-    make_scorer,
-)
-from sklearn.model_selection import cross_validate
 from sklearn.metrics import accuracy_score
 
 import config
@@ -97,7 +88,3 @@ def plot(x, y, estimator, cv):
         train_sizes=np.linspace(0.01, 1.0, 10),
     )
     plt.show()
-    
-if __name__ == "__main__":
-    model = tf.keras.models.load_model(str(config.OUTPUT_DIR / "model.h5"))
-    evaluate_keras(model)

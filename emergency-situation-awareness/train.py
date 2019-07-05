@@ -15,7 +15,7 @@ from sklearn.metrics import (
     fbeta_score,
     make_scorer,
 )
-from sklearn.model_selection import cross_validate, KFold, train_test_split
+from sklearn.model_selection import cross_validate, KFold, train_test_split, StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 
 import config
@@ -82,6 +82,7 @@ def train_keras(
         shuffle=True
         # callbacks=[es, cp],
     )
+    utils.plot_keras(history)
     end = time.time()
     print(utils.timer(start, end))
     model.save(str(config.OUTPUT_DIR / "model.h5"))
@@ -153,8 +154,8 @@ def train_svm(
     scaler = StandardScaler(with_mean=False)
     scaler.fit(train_x)
     train_x = scaler.transform(train_x)
-    svm_model = svm.LinearSVC(C=c, max_iter=max_iter)
-    # svm_model = svm.SVC(kernel="poly", degree=3, gamma="auto", C=c, max_iter=max_iter)
+    # svm_model = svm.LinearSVC(C=c, max_iter=max_iter)
+    svm_model = svm.SVC(kernel="rbf", degree=3, gamma="auto", C=c, max_iter=max_iter)
     print("\nCross Validation...")
     _train_linear(svm_model, train_x, train_y)
     print("\nFitting...")
@@ -163,7 +164,7 @@ def train_svm(
 
 
 def _process_linear(
-    train_x: List[List[str]], train_y: List[int]
+    train_x: List[List[str]], train_y: List[int], max_features: int = None
 ) -> Tuple[List[List[int]], List[int], TfidfVectorizer]:
     """
     This method is used to process the sentences with respect to a sklearn model
@@ -171,7 +172,7 @@ def _process_linear(
     :return: tf-idf sentences conversion, tf-idf distribution
     """
     train_x, train_y = sklearn.utils.shuffle(train_x, train_y)
-    train_x, tfidf_vect = preprocess.tf_idf_conversion(train_x)
+    train_x, tfidf_vect = preprocess.tf_idf_conversion(train_x, max_features)
     return train_x, train_y, tfidf_vect
 
 
@@ -183,7 +184,7 @@ def _train_linear(model, train_x, train_y):
         "f1": make_scorer(fbeta_score, beta=1, pos_label=1),
     }
     start = time.time()
-    kfold = KFold(10, True, 1)
+    kfold = StratifiedKFold(10, True, 1)
     accuracy, precision, recall, fscore = validation(
         train_x, train_y, model, kfold, scoring
     )

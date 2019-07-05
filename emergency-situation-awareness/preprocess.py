@@ -4,11 +4,10 @@ from typing import Dict, List, Set, Tuple
 
 import gensim
 import numpy as np
-from keras_preprocessing.text import maketrans
 from nltk.corpus import stopwords
+from nltk.tokenize import TweetTokenizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
-from nltk.tokenize import TweetTokenizer
 
 import utils
 
@@ -59,7 +58,11 @@ def _clear_tweet(tweet: str, tokenizer, stops: Set, html_regex) -> List:
     :param stops: set of stop words and punctuation to remove.
     :return: tweet cleaned.
     """
-    return [word for word in tokenizer.tokenize(tweet.lower()) if word not in stops and not html_regex.search(word)]
+    return [
+        word
+        for word in tokenizer.tokenize(tweet.lower())
+        if word not in stops and not html_regex.search(word)
+    ]
 
 
 def compute_x(
@@ -97,7 +100,6 @@ def batch_generator(
     :param labels: list of labels
     :param vocab: unigram vocab
     :param batch_size: size of the batch to yield
-    :param n_classes: number of classes
     :param max_input_len: max len of the input
     :return: processed features and labels, in batches
     """

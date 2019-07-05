@@ -4,16 +4,13 @@ import re
 import zipfile
 from typing import List, Dict, Tuple
 
-import matplotlib.pyplot as plt
 import gensim
+import matplotlib.pyplot as plt
 import nltk
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
 from nltk.corpus import stopwords
 from sklearn.decomposition import TruncatedSVD
 from sklearn.model_selection import learning_curve
-
-import config
 
 
 def read_txt(filename: str) -> List[str]:
@@ -98,52 +95,6 @@ def read_datasets(path, limit: int = 30000) -> List[str]:
     for file in path.glob("./*.txt"):
         tweets += read_txt(file)[:limit]
     return tweets
-
-
-def read_crisilex() -> List[str]:
-    """
-    Read crisis tweets from crisislex folder.
-    :return: list of tweets.
-    """
-    tweets = []
-    for file in config.CRISISLEX_DIR.glob("./*.csv"):
-        tweets += _read_crisislex_csv(file)
-    return tweets
-
-
-def read_normal() -> List[str]:
-    """
-    Read non-crisis tweets from normal folder.
-    :return: list of tweets.
-    """
-    tweets = []
-    for file in list(config.NORMAL_TRAIN_DIR.glob("./*.csv"))[:13]:
-        tweets += _read_csv(file)
-    return tweets
-
-
-def _read_csv(filename) -> List[str]:
-    """
-    Extract tweet from csv file.
-    :param filename: csv file.
-    :return: a list of tweets.
-    """
-    with open(filename, encoding="latin1") as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=",")
-        next(csv_reader)
-        return [row[-1] for row in csv_reader]
-
-
-def _read_crisislex_csv(filename) -> List[str]:
-    """
-    Extract tweet from csv file.
-    :param filename: csv file.
-    :return: a list of tweets.
-    """
-    with open(filename, encoding="utf8") as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=",")
-        next(csv_reader)
-        return [row[1] for row in csv_reader]
 
 
 def split_csv(filename: str, n_split: int):
@@ -404,8 +355,46 @@ def plot_learning_curve(
 
 
 def plot_space(x, y):
-    data_2d = TruncatedSVD(n_components=2, n_iter=100, random_state=42).fit_transform(x)
+    """
+    Plot data in 2d space.
+    :param x: features.
+    :param y: labels.
+    :return:
+    """
+    data_2d = TruncatedSVD(n_components=2, n_iter=200, random_state=42).fit_transform(x)
+    plt.grid()
     plt.scatter(data_2d[:, 0], data_2d[:, 1], c=y)
+    plt.show()
+
+
+def plot_keras(history):
+    """
+    Plot validation and training accuracy, validation and training loss over time.
+    """
+    fig, axes = plt.subplots(2, sharex=True, figsize=(12, 8))
+
+    axes[0].set_ylabel("Loss", fontsize=14)
+    axes[0].plot(history.history["loss"])
+    axes[0].plot(history.history["val_loss"])
+    axes[0].legend(
+        ["loss", "val_loss"],
+        loc="upper right",
+        frameon=True,
+        facecolor="white",
+        fontsize="large",
+    )
+
+    axes[1].set_ylabel("Accuracy", fontsize=14)
+    axes[1].set_xlabel("Epoch", fontsize=14)
+    axes[1].plot(history.history["acc"])
+    axes[1].plot(history.history["val_acc"])
+    axes[1].legend(
+        ["acc", "val_acc"],
+        loc="lower right",
+        frameon=True,
+        facecolor="white",
+        fontsize="large",
+    )
 
     plt.show()
 

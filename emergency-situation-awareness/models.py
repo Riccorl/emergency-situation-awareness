@@ -1,18 +1,14 @@
 import gensim
 import numpy as np
-import tensorflow as tf
 from tensorflow import keras
 from tensorflow.python.keras import Model
-from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.layers import (
     Dense,
     Embedding,
     Bidirectional,
     LSTM,
     Input,
-    Layer,
-    SpatialDropout1D
-)
+    Dropout)
 
 
 def build_model(
@@ -22,20 +18,13 @@ def build_model(
     dropout: float = 0.2,
     recurrent_dropout: float = 0.1,
     learning_rate: float = 0.002,
-    vocab_size: int = None,
     word2vec: gensim.models.word2vec.Word2Vec = None,
-    embedding_size: int = 300,
     train_embeddings: bool = False,
 ) -> Model:
 
     input_layer = Input(shape=(input_length,))
-    if word2vec:
-        em = get_keras_embedding(word2vec, train_embeddings)(input_layer)
-    else:
-        em = Embedding(
-            vocab_size, embedding_size, input_length=input_length, mask_zero=True
-        )(input_layer)
-    dr = SpatialDropout1D(0.6)(em)
+    em = get_keras_embedding(word2vec, train_embeddings)(input_layer)
+    dr = Dropout(0.6)(em)
     lstm1 = Bidirectional(
         layer(
             units=hidden_size,
@@ -44,9 +33,6 @@ def build_model(
             return_sequences=False,
         )
     )(dr)
-    # lstm2 = Bidirectional(
-    #     layer(units=hidden_size, dropout=dropout, recurrent_dropout=recurrent_dropout)
-    # )(lstm1)
 
     dense = Dense(100, activation="relu")(lstm1)
     output = Dense(1, activation="sigmoid")(dense)
