@@ -229,19 +229,6 @@ def restrict_w2v(w2v, restricted_word_set):
     return w2v
 
 
-def clean_embeddings(path_input: str, path_output: str, size: int):
-    """
-    Clean embeddings by removing non lemma_synset vectors.
-    :param path_input: path to original embeddings.
-    :param path_output: path to cleaned embeddings.
-    :param size:
-    :return:
-    """
-    old_emb = read_txt(path_input)
-    filtered = [vector for vector in old_emb if "_bn:" in vector]
-    write_txt(path_output, [str(len(filtered)) + " " + str(size)] + filtered)
-
-
 def w2v_txt_to_bin(path_input: str, path_output: str):
     """
 
@@ -396,6 +383,7 @@ def plot_keras(history):
         fontsize="large",
     )
 
+    plt.savefig("keras.png")
     plt.show()
 
 

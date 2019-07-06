@@ -61,7 +61,7 @@ def _clear_tweet(tweet: str, tokenizer, stops: Set, html_regex) -> List:
     return [
         word
         for word in tokenizer.tokenize(tweet.lower())
-        if word not in stops and not html_regex.search(word)
+        if word and word not in stops and not html_regex.search(word)
     ]
 
 

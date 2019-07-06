@@ -2,29 +2,11 @@
 
 ## Dataset
 
-* https://crisisnlp.qcri.org/lrec2016/lrec2016.html
-* https://crisisnlp.qcri.org/
-* http://crisislex.org/
+* <https://crisisnlp.qcri.org/lrec2016/lrec2016.html>
+* <https://crisisnlp.qcri.org/>
+* <http://crisislex.org/>
 
 ## Architecture
-
-### Burst Detection for Unexpected Incidents
-
-In our implementation, we used a training set of around 30 million tweets captured
-between June and September 2010. We preprocessed the tweets by removing stop words
-and stemming words, which resulted in a set of roughly 2.6 million distinct features,
-based on which we built our background alert model. In the online phase, we devised
-an alerting scheme that evaluates a sliding 5-minute window of features against
-the alert model every minute.
-
-For evaluation, we annotated roughly 2,400 features in a six-month Twitter dataset
-that we collected in 2010. We define an actual burst as one feature that suddenly
-occurs frequently in a time window and whose occurrence lasts more than 1 minute.
-We evaluate our burst-detection module using two commonly used metrics: detection
-rate and false-alarm rate. We compute the detection rate as the ratio of the number
-of correctly detected bursty features to the total number of actual bursty features,
-and the false-alarm rate as the ratio of the number of nonbursty features that are
-incorrectly detected as bursty features to the total number of nonbursty features.
 
 ### Classification for Impact Assessment
 
@@ -50,29 +32,54 @@ for classification. These features include
 After feature extraction, we performed experiments using a 10-fold cross-validation
 over our training data.
 
-### Online Clustering for Topic Discovery
+## Results
 
-To discover important topics from Twitter, we also developed an online incremental
-clustering algorithm that automatically groups similar tweets into topic clusters,
-so that each cluster corresponds to an event-specific topic. For this task, the desirable
-clustering algorithm should be scalable to handle the sheer volume of incoming tweets and
-not require a priori knowledge of the number of clusters, given that tweet contents are
-constantly evolving over time. So, partitional clustering algorithms such as k-means and
-expectation-maximization (EM) aren’t suitable for this problem, because they require the
-number of clusters as input.
+### Keras
 
-To capture tweets’ textual information, we represent each tweet using a vector of terms
-weighted using term frequency (TF) and inverse document frequency (IDF). Given a Twitter stream in
-which the tweets are sorted according to their published time, the basic idea of incremental
-clustering is as follows. First, the algorithm takes the first tweet from the stream and uses it
-to form a cluster. Next, for each incoming tweet, __T__, the algorithm computes its similarity with
-any existing clusters. Let C be the cluster that has the maximum similarity with __T__. If `sim(T, C)`
-is greater than a threshold __d__, which is to be determined empirically, tweet __T__ is added to
-the cluster __C__; otherwise, a new cluster is formed based on __T__. We define the function `sim(T, C)`
-to be the similarity between tweet __T__ and cluster __C__. In the clustering process, whenever a new tweet __T__
-is added to a cluster __C__, the centroid of __C__ is updated as the normalized vector sum of all the tweets in __C__.
-We use two similarity measures: cosine similarity and Jaccard similarity.
-To take into account the temporal dimension, we add another time factor to the similarity measure that favors
-a tweet to be added to the clusters whose time centroids are close to the tweet’s publication time.
-We measure clustering quality using the Silhouette score, which is a metric-independent measure designed
-to describe the ratio between cluster coherence and separation.
+**540k tweets**
+Crisis nlp pre-trained
+Dev set: 0.9808
+Evaluate Keras...
+Number of crisis tweets: 6000
+Number of non-crisis tweets: 7000
+Classification report :
+               precision    recall  f1-score   support
+
+      normal       0.82      0.98      0.89      7000
+      crisis       0.97      0.74      0.84      6000
+
+    accuracy                           0.87     13000
+   macro avg       0.89      0.86      0.87     13000
+weighted avg       0.89      0.87      0.87     13000
+
+**1079077 tweets**
+Crisis nlp pre-trained
+Dev set: 0.98.
+Evaluate Keras...
+Number of crisis tweets: 6000
+Number of non-crisis tweets: 7000
+Classification report :
+               precision    recall  f1-score   support
+
+      normal       0.86      0.98      0.91      7000
+      crisis       0.97      0.81      0.88      6000
+
+    accuracy                           0.90     13000
+   macro avg       0.91      0.89      0.90     13000
+weighted avg       0.91      0.90      0.90     13000
+
+**1759077 tweets**
+Crisis nlp pre-trained
+Dev set: 0.9686.
+Evaluate Keras...
+Number of crisis tweets: 6000
+Number of non-crisis tweets: 7000
+Classification report :
+               precision    recall  f1-score   support
+
+      normal       0.89      0.97      0.93      7000
+      crisis       0.96      0.86      0.91      6000
+
+    accuracy                           0.92     13000
+   macro avg       0.93      0.91      0.92     13000
+weighted avg       0.92      0.92      0.92     13000

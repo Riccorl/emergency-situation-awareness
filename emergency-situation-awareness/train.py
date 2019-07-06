@@ -1,3 +1,4 @@
+import logging
 import time
 from typing import List, Tuple, Dict, Optional
 
@@ -15,7 +16,12 @@ from sklearn.metrics import (
     fbeta_score,
     make_scorer,
 )
-from sklearn.model_selection import cross_validate, KFold, train_test_split, StratifiedKFold
+from sklearn.model_selection import (
+    cross_validate,
+    KFold,
+    train_test_split,
+    StratifiedKFold,
+)
 from sklearn.preprocessing import StandardScaler
 
 import config
@@ -55,20 +61,22 @@ def train_keras(
     vocab, w2v, w2v_vocab = _process_keras(tweets_tr, labels_tr, path_embeddings)
 
     train_gen = TextSequence(
-        tweets_tr, labels_tr, vocab=w2v_vocab, batch_size=batch_size, max_len=100
+        tweets_tr, labels_tr, vocab=w2v_vocab, batch_size=batch_size, max_len=15
     )
 
     dev_gen = TextSequence(
-        tweets_dev, labels_dev, vocab=w2v_vocab, batch_size=batch_size, max_len=100
+        tweets_dev, labels_dev, vocab=w2v_vocab, batch_size=batch_size, max_len=15
     )
 
     model = models.build_model(
-        layer=tf.keras.layers.GRU,
         hidden_size=hidden_size,
-        dropout=0.4,
+        dropout=0.6,
         recurrent_dropout=0.2,
-        vocab_size=len(w2v_vocab),
         word2vec=w2v,
+    )
+
+    es = tf.keras.callbacks.EarlyStopping(
+        monitor="val_loss", patience=4, mode="min", verbose=1, restore_best_weights=True
     )
 
     print("Starting training...")
@@ -79,8 +87,8 @@ def train_keras(
         epochs=epochs,
         validation_data=dev_gen,
         validation_steps=len(tweets_dev) // batch_size,
-        shuffle=True
-        # callbacks=[es, cp],
+        shuffle=True,
+        callbacks=[es],
     )
     utils.plot_keras(history)
     end = time.time()
@@ -103,7 +111,9 @@ def _process_keras(
     """
     print("Loading pre-trained embeddings...")
     # load the w2v matrix with genism
-    w2v = gensim.models.KeyedVectors.load_word2vec_format(path_embeddings, binary=True)
+    w2v = gensim.models.KeyedVectors.load_word2vec_format(
+        path_embeddings, binary=True
+    )
     for i, t in enumerate(features_train):
         if not t:
             del features_train[i]
@@ -119,7 +129,7 @@ def _process_keras(
     utils.write_dictionary(config.TRAIN_VOCAB, w2v_vocab)
     print("Cleaned vocab len:", len(w2v_vocab))
     # idx2word = {v: k for k, v in vocab.items()}
-    return data_vocab, w2v, w2v_vocab
+    return data_vocab, w2v, w2v_vocab,
 
 
 def train_bayes(train_x: List[List[str]], train_y: List[int]):
