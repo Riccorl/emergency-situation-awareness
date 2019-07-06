@@ -1,10 +1,8 @@
-import logging
 import time
 from typing import List, Tuple, Dict, Optional
 
 import gensim
 import numpy as np
-import sklearn
 import tensorflow as tf
 from gensim.models import Word2Vec
 from sklearn import naive_bayes, svm
@@ -18,14 +16,11 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import (
     cross_validate,
-    KFold,
     train_test_split,
     StratifiedKFold,
 )
-from sklearn.preprocessing import StandardScaler
 
 import config
-import evaluation
 import models
 import preprocess
 import utils
@@ -69,10 +64,7 @@ def train_keras(
     )
 
     model = models.build_model(
-        hidden_size=hidden_size,
-        dropout=0.6,
-        recurrent_dropout=0.2,
-        word2vec=w2v,
+        hidden_size=hidden_size, dropout=0.6, recurrent_dropout=0.2, word2vec=w2v
     )
 
     es = tf.keras.callbacks.EarlyStopping(
@@ -111,9 +103,7 @@ def _process_keras(
     """
     print("Loading pre-trained embeddings...")
     # load the w2v matrix with genism
-    w2v = gensim.models.KeyedVectors.load_word2vec_format(
-        path_embeddings, binary=True
-    )
+    w2v = gensim.models.KeyedVectors.load_word2vec_format(path_embeddings, binary=True)
     for i, t in enumerate(features_train):
         if not t:
             del features_train[i]
@@ -129,7 +119,7 @@ def _process_keras(
     utils.write_dictionary(config.TRAIN_VOCAB, w2v_vocab)
     print("Cleaned vocab len:", len(w2v_vocab))
     # idx2word = {v: k for k, v in vocab.items()}
-    return data_vocab, w2v, w2v_vocab,
+    return data_vocab, w2v, w2v_vocab
 
 
 def train_bayes(train_x: List[List[str]], train_y: List[int]):
@@ -148,24 +138,36 @@ def train_bayes(train_x: List[List[str]], train_y: List[int]):
     return naive, tfidf_vec
 
 
+
 def train_svm(
-    train_x: List[List[str]], train_y: List[int], c: int = 1.0, max_iter: int = 2000
+    train_x: List[List[str]], train_y: List[int], c: int = 100.0, max_iter: int = 4000
 ):
     """
-    Thise method is used to train a SVM classifier
+    This method is used to train a SVM classifier
     :param train_x: input train
     :param train_y: label train
     :param c: penalty parameter C of the error term.
     :param max_iter: number of maximum iteration
     :return: SVM model, tf-idf distribution
     """
+
     train_x, train_y, tfidf_vec = _process_linear(train_x, train_y)
-    print("Standard Scaler...")
-    scaler = StandardScaler(with_mean=False)
-    scaler.fit(train_x)
-    train_x = scaler.transform(train_x)
+
+    # print("Standard Scaler...")
+    # scaler = StandardScaler(with_mean=False)
+    # scaler.fit(train_x)
+    # train_x = scaler.transform(train_x)
+
+    # print("Decomponing PCA...")
+    # t_svd = decomposition.TruncatedSVD(n_components=10, random_state=42)
+    # t_svd.fit(train_x)
+    # train_x = t_svd.transform(train_x)
+
     # svm_model = svm.LinearSVC(C=c, max_iter=max_iter)
-    svm_model = svm.SVC(kernel="rbf", degree=3, gamma="auto", C=c, max_iter=max_iter)
+    # svm_model = svm.NuSVC(gamma='scale', max_iter=max_iter)
+    svm_model = svm.SVC(
+        kernel="rbf", gamma="auto", degree=3, max_iter=max_iter, C=c, verbose=False
+    )
     print("\nCross Validation...")
     _train_linear(svm_model, train_x, train_y)
     print("\nFitting...")
@@ -181,7 +183,7 @@ def _process_linear(
     :param train_x: input train
     :return: tf-idf sentences conversion, tf-idf distribution
     """
-    train_x, train_y = sklearn.utils.shuffle(train_x, train_y)
+    # train_x, train_y = sklearn.utils.shuffle(train_x, train_y)
     train_x, tfidf_vect = preprocess.tf_idf_conversion(train_x, max_features)
     return train_x, train_y, tfidf_vect
 
@@ -205,8 +207,8 @@ def _train_linear(model, train_x, train_y):
     print("F1 score: {0:.2f}".format(fscore))
     print("Execution Time: " + utils.timer(start, end))
     print("")
-    print("Plotting learning curve...")
-    evaluation.plot(train_x, train_y, model, kfold)
+    # print("Plotting learning curve...")
+    # evaluation.plot(train_x, train_y, model, kfold)
     print("Done.")
 
 

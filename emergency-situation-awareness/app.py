@@ -36,12 +36,12 @@ def main():
 
     train_x, train_y = preprocessing(limit=30000)
 
-    print("Training Keras...")
-    model = train.train_keras(
-        train_x, train_y, config.CRISIS_PRE_TRAINED, epochs=15, hidden_size=256
-    )
-    print("Evaluate Keras...")
-    evaluation.evaluate_keras(model)
+    # print("Training Keras...")
+    # model = train.train_keras(
+    #     train_x, train_y, config.CRISIS_PRE_TRAINED, epochs=15, hidden_size=256
+    # )
+    # print("Evaluate Keras...")
+    # evaluation.evaluate_keras(model)
 
     print("Training Naive Bayes...")
     model, tfidf_vec = train.train_bayes(train_x, train_y)
