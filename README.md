@@ -41,19 +41,19 @@ Crisis nlp pre-trained
 
 Dev set: 0.98
 
-* Number of crisis tweets: 6000
-* Number of non-crisis tweets: 6000
+* Number of crisis tweets: 32000
+* Number of non-crisis tweets: 32000
 
 ```
 Classification report : 
                precision    recall  f1-score   support
 
-      normal       0.83      0.98      0.90      6000
-      crisis       0.98      0.80      0.88      6000
+      normal       0.93      0.98      0.95     32000
+      crisis       0.98      0.92      0.95     32000
 
-    accuracy                           0.89     12000
-   macro avg       0.90      0.89      0.89     12000
-weighted avg       0.90      0.89      0.89     12000
+    accuracy                           0.95     64000
+   macro avg       0.95      0.95      0.95     64000
+weighted avg       0.95      0.95      0.95     64000
 ```
 
 **1759077 tweets:** Crisis nlp pre-trained
