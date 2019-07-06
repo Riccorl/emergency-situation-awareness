@@ -26,14 +26,13 @@ def evaluate_keras(model) -> None:
     :param model: the trained model.
     :return:
     """
-
     x_test, y_test = utils.load_datasets(
-        config.CRISIS_EVAL_DIR, config.NORMAL_EVAL_DIR, limit=1000
+        config.CRISIS_EVAL_DIR, config.NORMAL_EVAL_DIR, limit=8000
     )
     x_test = preprocess.clear_tweets(x_test)
     vocab = utils.read_dictionary(config.TRAIN_VOCAB)
     x_test = preprocess.compute_x(x_test, vocab, max_len=100)[:, :, 0]
-    y_pred = model.predict(x_test, batch_size=64)
+    y_pred = model.predict(x_test, batch_size=256, verbose=1)
     y_pred = [1 if y > 0.5 else 0 for y in y_pred]
     cr = classification_report(y_test, y_pred, ["normal", "crisis"])
     print("Classification report : \n", cr)

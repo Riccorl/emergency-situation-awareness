@@ -39,18 +39,30 @@ over our training data.
 **540k tweets**
 Crisis nlp pre-trained
 Dev set: 0.9808
-Evaluate Keras...
 Number of crisis tweets: 6000
-Number of non-crisis tweets: 7000
-Classification report :
+Number of non-crisis tweets: 6000
+Classification report : 
                precision    recall  f1-score   support
 
-      normal       0.82      0.98      0.89      7000
-      crisis       0.97      0.74      0.84      6000
+      normal       0.83      0.98      0.90      6000
+      crisis       0.98      0.80      0.88      6000
 
-    accuracy                           0.87     13000
-   macro avg       0.89      0.86      0.87     13000
-weighted avg       0.89      0.87      0.87     13000
+    accuracy                           0.89     12000
+   macro avg       0.90      0.89      0.89     12000
+weighted avg       0.90      0.89      0.89     12000
+
+Evaluate Keras...
+Number of crisis tweets: 2000
+Number of non-crisis tweets: 2000
+Classification report : 
+               precision    recall  f1-score   support
+
+      normal       0.92      0.98      0.95      4000
+      crisis       0.98      0.91      0.95      4000
+
+    accuracy                           0.95      8000
+   macro avg       0.95      0.95      0.95      8000
+weighted avg       0.95      0.95      0.95      8000
 
 **1079077 tweets**
 Crisis nlp pre-trained
