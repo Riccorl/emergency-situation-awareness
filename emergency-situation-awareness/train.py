@@ -67,6 +67,10 @@ def train_keras(
         hidden_size=hidden_size, dropout=0.6, recurrent_dropout=0.2, word2vec=w2v
     )
 
+    cp_path = "model_chkpt_big.h5"
+    cp = tf.keras.callbacks.ModelCheckpoint(
+        cp_path, monitor="val_loss", verbose=1, save_best_only=True, mode="min"
+    )
     es = tf.keras.callbacks.EarlyStopping(
         monitor="val_loss", patience=4, mode="min", verbose=1, restore_best_weights=True
     )
@@ -80,12 +84,12 @@ def train_keras(
         validation_data=dev_gen,
         validation_steps=len(tweets_dev) // batch_size,
         shuffle=True,
-        callbacks=[es],
+        callbacks=[cp, es],
     )
     utils.plot_keras(history)
     end = time.time()
     print(utils.timer(start, end))
-    model.save(str(config.OUTPUT_DIR / "model.h5"))
+    model.save(str(config.OUTPUT_DIR / "model_big.h5"))
     print("Training complete.")
 
     return model
@@ -130,7 +134,7 @@ def train_bayes(train_x: List[List[str]], train_y: List[int]):
     :return: naive bayes model, tf-idf distribution
     """
     train_x, train_y, tfidf_vec = _process_linear(train_x, train_y)
-    naive = naive_bayes.BernoulliNB()
+    naive = naive_bayes.MultinomialNB()
     print("\nCross Validation...")
     _train_linear(naive, train_x, train_y)
     print("\nFitting...")
