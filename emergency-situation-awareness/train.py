@@ -3,6 +3,7 @@ from typing import List, Tuple, Dict, Optional
 
 import gensim
 import numpy as np
+import sklearn
 import tensorflow as tf
 from gensim.models import Word2Vec
 from sklearn import naive_bayes, svm
@@ -14,11 +15,7 @@ from sklearn.metrics import (
     fbeta_score,
     make_scorer,
 )
-from sklearn.model_selection import (
-    cross_validate,
-    train_test_split,
-    StratifiedKFold,
-)
+from sklearn.model_selection import cross_validate, train_test_split, StratifiedKFold
 
 import config
 import models
@@ -142,7 +139,6 @@ def train_bayes(train_x: List[List[str]], train_y: List[int]):
     return naive, tfidf_vec
 
 
-
 def train_svm(
     train_x: List[List[str]], train_y: List[int], c: int = 100.0, max_iter: int = 4000
 ):
@@ -187,7 +183,7 @@ def _process_linear(
     :param train_x: input train
     :return: tf-idf sentences conversion, tf-idf distribution
     """
-    # train_x, train_y = sklearn.utils.shuffle(train_x, train_y)
+    train_x, train_y = sklearn.utils.shuffle(train_x, train_y)
     train_x, tfidf_vect = preprocess.tf_idf_conversion(train_x, max_features)
     return train_x, train_y, tfidf_vect
 
@@ -211,8 +207,9 @@ def _train_linear(model, train_x, train_y):
     print("F1 score: {0:.2f}".format(fscore))
     print("Execution Time: " + utils.timer(start, end))
     print("")
-    # print("Plotting learning curve...")
-    # evaluation.plot(train_x, train_y, model, kfold)
+    print("Plotting learning curve...")
+    # utils.plot_learning_curve(train_x, train_y, model, kfold, scoring["accuracy"])
+    # utils.plot_learning_curve(train_x, train_y, model, kfold, scoring["precision"])
     print("Done.")
 
 

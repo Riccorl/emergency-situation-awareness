@@ -249,11 +249,12 @@ def flatten(input_list: List[List[str]]) -> List[str]:
     return [" ".join(elem) for elem in input_list]
 
 
-def plot_learning_curve(
+def _plot_learning_curve(
     estimator,
     title,
     x,
     y,
+    scoring,
     ylim=None,
     cv=None,
     n_jobs=None,
@@ -309,7 +310,7 @@ def plot_learning_curve(
     plt.xlabel("Training examples")
     plt.ylabel("Score")
     train_sizes, train_scores, test_scores = learning_curve(
-        estimator, x, y, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes
+        estimator, x, y, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes, scoring=scoring
     )
     train_scores_mean = np.mean(train_scores, axis=1)
     train_scores_std = np.std(train_scores, axis=1)
@@ -384,6 +385,33 @@ def plot_keras(history):
     )
 
     plt.savefig("keras.png")
+    plt.show()
+
+
+def plot_learning_curve(x, y, estimator, cv, scoring):
+    """
+    Plot the learning curve.
+    :param x: features.
+    :param y: labels.
+    :param estimator:
+    :param cv:
+    :param scoring:
+    :return:
+    """
+    title = "Learning Curves"
+    # Cross validation with 100 iterations to get smoother mean test and train
+    # score curves, each time with 20% data randomly selected as a validation set.
+    _plot_learning_curve(
+        estimator,
+        title,
+        x,
+        y,
+        scoring,
+        ylim=(0.7, 1.01),
+        cv=cv,
+        n_jobs=-1,
+        train_sizes=np.linspace(0.01, 1.0, 10),
+    )
     plt.show()
 
 

@@ -47,7 +47,7 @@ def evaluate_sklearn(model, tfidf_vec: TfidfVectorizer, kind_model: str = None) 
     :return: None
     """
     x_test, y_test = utils.load_datasets(
-        config.CRISIS_EVAL_DIR, config.NORMAL_EVAL_DIR, limit=1000
+        config.CRISIS_EVAL_DIR, config.NORMAL_EVAL_DIR, limit=8000
     )
     x_test = preprocess.clear_tweets(x_test)
 
@@ -63,27 +63,3 @@ def evaluate_sklearn(model, tfidf_vec: TfidfVectorizer, kind_model: str = None) 
     cr = classification_report(y_test, y_pred, ["normal", "crisis"])
     print("Classification report : \n", cr)
 
-
-def plot(x, y, estimator, cv):
-    """
-    Plot the learning curve.
-    :param x: features.
-    :param y: labels.
-    :param estimator:
-    :param cv:
-    :return:
-    """
-    title = "Learning Curves"
-    # Cross validation with 100 iterations to get smoother mean test and train
-    # score curves, each time with 20% data randomly selected as a validation set.
-    utils.plot_learning_curve(
-        estimator,
-        title,
-        x,
-        y,
-        ylim=(0.7, 1.01),
-        cv=cv,
-        n_jobs=-1,
-        train_sizes=np.linspace(0.01, 1.0, 10),
-    )
-    plt.show()
