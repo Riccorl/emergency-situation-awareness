@@ -339,7 +339,7 @@ def _plot_learning_curve(
 
     plt.legend(loc="best")
     fig.savefig("plot.png")
-    return plt
+    return plt, train_sizes, train_scores, test_scores
 
 
 def plot_space(x, y):
@@ -406,13 +406,57 @@ def plot_learning_curve(x, y, estimator, cv, scoring):
         title,
         x,
         y,
-        scoring,
+        scoring["accuracy"],
         ylim=(0.7, 1.01),
         cv=cv,
         n_jobs=-1,
         train_sizes=np.linspace(0.01, 1.0, 10),
     )
     plt.show()
+    _, precision_sizes, _, precision_scores = _plot_learning_curve(
+        estimator,
+        title,
+        x,
+        y,
+        scoring["precision"],
+        ylim=(0.7, 1.01),
+        cv=cv,
+        n_jobs=-1,
+        train_sizes=np.linspace(0.01, 1.0, 10),
+    )
+    _, recall_sizes, _, recall_scores = _plot_learning_curve(
+        estimator,
+        title,
+        x,
+        y,
+        scoring["recall"],
+        ylim=(0.7, 1.01),
+        cv=cv,
+        n_jobs=-1,
+        train_sizes=np.linspace(0.01, 1.0, 10),
+    )
+    _plot_pr_rcll(precision_sizes, recall_sizes, precision_scores, recall_scores)
+
+
+def _plot_pr_rcll(precision_sizes, recall_sizes, test_precision, test_recall):
+    fig = plt.figure()
+    plt.title("")
+    plt.xlabel("Training examples")
+    plt.ylabel("Score")
+
+    test_precision_mean = np.mean(test_precision)
+    test_recall_mean = np.mean(test_recall)
+    plt.grid()
+
+    plt.plot(precision_sizes, test_precision_mean, "o-", color="r", label="Precision score")
+    plt.plot(
+        recall_sizes, test_recall_mean, "o-", color="b", label="Recall score"
+    )
+
+    plt.legend(loc="best")
+    # fig.savefig("plot.png")
+    plt.show()
+    pass
 
 
 def timer(start: float, end: float) -> str:

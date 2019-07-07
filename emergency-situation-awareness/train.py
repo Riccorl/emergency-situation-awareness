@@ -208,7 +208,7 @@ def _train_linear(model, train_x, train_y):
     print("Execution Time: " + utils.timer(start, end))
     print("")
     print("Plotting learning curve...")
-    # utils.plot_learning_curve(train_x, train_y, model, kfold, scoring["accuracy"])
+    utils.plot_learning_curve(train_x, train_y, model, kfold, scoring)
     # utils.plot_learning_curve(train_x, train_y, model, kfold, scoring["precision"])
     print("Done.")
 
