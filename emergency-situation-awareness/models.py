@@ -29,11 +29,19 @@ def build_model(
             units=hidden_size,
             dropout=dropout,
             recurrent_dropout=recurrent_dropout,
-            return_sequences=False,
+            return_sequences=True,
         )
     )(em)
+    lstm2 = Bidirectional(
+        layer(
+            units=hidden_size,
+            dropout=dropout,
+            recurrent_dropout=recurrent_dropout,
+            return_sequences=False,
+        )
+    )(lstm1)
 
-    dense = Dense(100, activation="relu")(lstm1)
+    dense = Dense(100, activation="relu")(lstm2)
     output = Dense(1, activation="sigmoid")(dense)
     model = Model(inputs=input_layer, outputs=output)
     optimizer = keras.optimizers.Adam()

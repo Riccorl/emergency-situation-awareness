@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sklearn
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_recall_curve
 
 import config
 import preprocess
@@ -54,12 +54,15 @@ def evaluate_sklearn(model, tfidf_vec: TfidfVectorizer, kind_model: str = None) 
     x_test = utils.flatten(x_test)
     x_test = tfidf_vec.transform(x_test)
     y_pred = model.predict(x_test)
+    # probs = model.predict_proba(x_test)[:, 1]
 
     print(
-        "Evaluating", kind_model if kind_model is not None else "Sklearn model", "..."
+        "Evaluating", kind_model if kind_model else "Sklearn model", "..."
     )
 
     print("Accuracy Score:", accuracy_score(y_pred, y_test) * 100)
     cr = classification_report(y_test, y_pred, ["normal", "crisis"])
     print("Classification report : \n", cr)
+    # utils.precision_recall_curve(precision_recall_curve(y_test, probs))
+
 

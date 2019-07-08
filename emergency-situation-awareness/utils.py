@@ -249,6 +249,90 @@ def flatten(input_list: List[List[str]]) -> List[str]:
     return [" ".join(elem) for elem in input_list]
 
 
+def plot_space(x, y):
+    """
+    Plot data in 2d space.
+    :param x: features.
+    :param y: labels.
+    :return:
+    """
+    data_2d = TruncatedSVD(n_components=2, n_iter=200, random_state=42).fit_transform(x)
+    plt.grid()
+    plt.scatter(data_2d[:, 0], data_2d[:, 1], c=y)
+    plt.show()
+
+
+def plot_keras(history):
+    """
+    Plot validation and training accuracy, validation and training loss over time.
+    """
+    fig, axes = plt.subplots(2, sharex=True, figsize=(12, 8))
+
+    axes[0].set_ylabel("Loss", fontsize=14)
+    axes[0].plot(history.history["loss"])
+    axes[0].plot(history.history["val_loss"])
+    axes[0].legend(
+        ["loss", "val_loss"],
+        loc="upper right",
+        frameon=True,
+        facecolor="white",
+        fontsize="large",
+    )
+
+    axes[1].set_ylabel("Accuracy", fontsize=14)
+    axes[1].set_xlabel("Epoch", fontsize=14)
+    axes[1].plot(history.history["acc"])
+    axes[1].plot(history.history["val_acc"])
+    axes[1].legend(
+        ["acc", "val_acc"],
+        loc="lower right",
+        frameon=True,
+        facecolor="white",
+        fontsize="large",
+    )
+
+    plt.savefig("keras.png")
+    plt.show()
+
+
+def plot_learning_curve(x, y, estimator, cv, scoring):
+    """
+    Plot the learning curve.
+    :param x: features.
+    :param y: labels.
+    :param estimator:
+    :param cv:
+    :param scoring:
+    :return:
+    """
+    title = "Learning Curves"
+    _plot_learning_curve(
+        estimator,
+        title,
+        x,
+        y,
+        scoring["accuracy"],
+        ylim=(0.7, 1.01),
+        cv=cv,
+        n_jobs=-1,
+        train_sizes=np.linspace(0.01, 1.0, 10),
+    )
+
+
+def precision_recall_curve(pr_curve):
+    fig = plt.figure()
+    plt.title("PR Curve")
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+
+    precision, recall, _ = pr_curve
+    plt.step(recall, precision, color="b", where="post")
+    plt.fill_between(recall, precision, alpha=0.2, color="b", step="post")
+    plt.show()
+
+
 def _plot_learning_curve(
     estimator,
     title,
@@ -338,125 +422,9 @@ def _plot_learning_curve(
     )
 
     plt.legend(loc="best")
-    fig.savefig("plot.png")
-    return plt, train_sizes, train_scores, test_scores
-
-
-def plot_space(x, y):
-    """
-    Plot data in 2d space.
-    :param x: features.
-    :param y: labels.
-    :return:
-    """
-    data_2d = TruncatedSVD(n_components=2, n_iter=200, random_state=42).fit_transform(x)
-    plt.grid()
-    plt.scatter(data_2d[:, 0], data_2d[:, 1], c=y)
-    plt.show()
-
-
-def plot_keras(history):
-    """
-    Plot validation and training accuracy, validation and training loss over time.
-    """
-    fig, axes = plt.subplots(2, sharex=True, figsize=(12, 8))
-
-    axes[0].set_ylabel("Loss", fontsize=14)
-    axes[0].plot(history.history["loss"])
-    axes[0].plot(history.history["val_loss"])
-    axes[0].legend(
-        ["loss", "val_loss"],
-        loc="upper right",
-        frameon=True,
-        facecolor="white",
-        fontsize="large",
-    )
-
-    axes[1].set_ylabel("Accuracy", fontsize=14)
-    axes[1].set_xlabel("Epoch", fontsize=14)
-    axes[1].plot(history.history["acc"])
-    axes[1].plot(history.history["val_acc"])
-    axes[1].legend(
-        ["acc", "val_acc"],
-        loc="lower right",
-        frameon=True,
-        facecolor="white",
-        fontsize="large",
-    )
-
-    plt.savefig("keras.png")
-    plt.show()
-
-
-def plot_learning_curve(x, y, estimator, cv, scoring):
-    """
-    Plot the learning curve.
-    :param x: features.
-    :param y: labels.
-    :param estimator:
-    :param cv:
-    :param scoring:
-    :return:
-    """
-    title = "Learning Curves"
-    # Cross validation with 100 iterations to get smoother mean test and train
-    # score curves, each time with 20% data randomly selected as a validation set.
-    _plot_learning_curve(
-        estimator,
-        title,
-        x,
-        y,
-        scoring["accuracy"],
-        ylim=(0.7, 1.01),
-        cv=cv,
-        n_jobs=-1,
-        train_sizes=np.linspace(0.01, 1.0, 10),
-    )
-    plt.show()
-    _, precision_sizes, _, precision_scores = _plot_learning_curve(
-        estimator,
-        title,
-        x,
-        y,
-        scoring["precision"],
-        ylim=(0.7, 1.01),
-        cv=cv,
-        n_jobs=-1,
-        train_sizes=np.linspace(0.01, 1.0, 10),
-    )
-    _, recall_sizes, _, recall_scores = _plot_learning_curve(
-        estimator,
-        title,
-        x,
-        y,
-        scoring["recall"],
-        ylim=(0.7, 1.01),
-        cv=cv,
-        n_jobs=-1,
-        train_sizes=np.linspace(0.01, 1.0, 10),
-    )
-    _plot_pr_rcll(precision_sizes, recall_sizes, precision_scores, recall_scores)
-
-
-def _plot_pr_rcll(precision_sizes, recall_sizes, test_precision, test_recall):
-    fig = plt.figure()
-    plt.title("")
-    plt.xlabel("Training examples")
-    plt.ylabel("Score")
-
-    test_precision_mean = np.mean(test_precision)
-    test_recall_mean = np.mean(test_recall)
-    plt.grid()
-
-    plt.plot(precision_sizes, test_precision_mean, "o-", color="r", label="Precision score")
-    plt.plot(
-        recall_sizes, test_recall_mean, "o-", color="b", label="Recall score"
-    )
-
-    plt.legend(loc="best")
     # fig.savefig("plot.png")
     plt.show()
-    pass
+    return plt
 
 
 def timer(start: float, end: float) -> str:

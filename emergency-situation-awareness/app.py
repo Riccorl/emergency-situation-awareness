@@ -35,7 +35,7 @@ def main():
     # x, y, _ = train._process_linear(x, y, max_features=1000)
     # utils.plot_space(x, y)
 
-    train_x, train_y = preprocessing(limit=30000)
+    train_x, train_y = preprocessing(limit=10000)
 
     # print("Training Keras...")
     # model = train.train_keras(
@@ -45,15 +45,15 @@ def main():
     # # model = tf.keras.models.load_model(str(config.OUTPUT_DIR / "model.h5"))
     # evaluation.evaluate_keras(model)
 
-    print("Training Naive Bayes...")
-    model, tfidf_vec = train.train_bayes(train_x, train_y)
-    print("Evaluate Bayes...")
-    evaluation.evaluate_sklearn(model, tfidf_vec, kind_model="Naive Bayes")
+    # print("Training Naive Bayes...")
+    # model, tfidf_vec = train.train_bayes(train_x, train_y)
+    # print("Evaluate Bayes...")
+    # evaluation.evaluate_sklearn(model, tfidf_vec, kind_model="Naive Bayes")
     #
-    # print("Training SVM...")
-    # model, tfidf_vec = train.train_svm(train_x, train_y)
-    # print("Evaluate SVM...")
-    # evaluation.evaluate_sklearn(model, tfidf_vec, kind_model="SVM")
+    print("Training SVM...")
+    model, tfidf_vec = train.train_svm(train_x, train_y, c=100.0, max_iter=2000)
+    print("Evaluate SVM...")
+    evaluation.evaluate_sklearn(model, tfidf_vec, kind_model="SVM")
 
 
 if __name__ == "__main__":

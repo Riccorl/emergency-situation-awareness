@@ -120,7 +120,7 @@ def batch_generator(
 
 def tf_idf_conversion(
     train_x: List[List[str]], max_features: int = None
-) -> Tuple[List[List[int]], TfidfVectorizer]:
+) -> Tuple[np.array, TfidfVectorizer]:
     """
     This method is used to map each sentences entry with tf-idf format
     :param train_x: input sentences

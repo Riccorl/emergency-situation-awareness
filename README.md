@@ -81,10 +81,10 @@ weighted avg       0.95      0.94      0.94     64000
 
 ```
 Cross Validation
-Accuracy: 0.98
+Accuracy: 0.97
 Precision: 0.98
-Recall: 0.97
-F1 score: 0.98
+Recall: 0.96
+F1 score: 0.97
 ```
 
 Evaluate Bayes
@@ -92,16 +92,99 @@ Evaluate Bayes
 * Number of crisis tweets: 32000
 * Number of non-crisis tweets: 32000
 
-Accuracy Score: 0.96
+Accuracy Score: 0.95
 
 ```
-Classification report:
-
+Classification report : 
                precision    recall  f1-score   support
-      normal       0.94      0.98      0.96     32000
-      crisis       0.98      0.94      0.96     32000
 
-    accuracy                           0.96     64000
-   macro avg       0.96      0.96      0.96     64000
-weighted avg       0.96      0.96      0.96     64000
+      normal       0.93      0.98      0.95     32000
+      crisis       0.97      0.93      0.95     32000
+
+    accuracy                           0.95     64000
+   macro avg       0.95      0.95      0.95     64000
+weighted avg       0.95      0.95      0.95     64000
 ```
+
+### SVM
+* Number of crisis tweets: 270000
+* Number of non-crisis tweets: 270000
+
+```
+Cross Validation
+Accuracy: 0.99
+Precision: 1.00
+Recall: 0.99
+F1 score: 0.99
+```
+
+Evaluate SVM
+
+* Number of crisis tweets: 32000
+* Number of non-crisis tweets: 32000
+
+Accuracy Score: 0.84
+
+```
+Classification report : 
+               precision    recall  f1-score   support
+
+      normal       0.76      1.00      0.87     32000
+      crisis       1.00      0.69      0.82     32000
+
+    accuracy                           0.85     64000
+   macro avg       0.88      0.85      0.84     64000
+weighted avg       0.88      0.85      0.84     64000
+```
+
+* Number of crisis tweets: 45000
+* Number of non-crisis tweets: 45000
+* max_features: 1000
+```
+Accuracy Score: 83.409375
+Classification report : 
+               precision    recall  f1-score   support
+
+      normal       0.75      1.00      0.86     32000
+      crisis       1.00      0.67      0.80     32000
+
+    accuracy                           0.83     64000
+   macro avg       0.87      0.83      0.83     64000
+weighted avg       0.87      0.83      0.83     64000
+```
+
+
+Loading tweets...
+Number of crisis tweets: 90000
+Number of non-crisis tweets: 90000
+Clearing tweets...
+Training SVM...
+(180000, 1000)
+Cross Validation...
+Accuracy: 0.99
+Precision: 1.00
+Recall: 0.99
+F1 score: 0.99
+Execution Time: 00:00:07.07
+
+Plotting learning curve...
+Done.
+
+Fitting...
+Evaluate SVM...
+Number of crisis tweets: 32000
+Number of non-crisis tweets: 32000
+Evaluating SVM ...
+Accuracy Score: 85.6328125
+Classification report : 
+               precision    recall  f1-score   support
+
+      normal       0.78      1.00      0.87     32000
+      crisis       1.00      0.71      0.83     32000
+
+    accuracy                           0.86     64000
+   macro avg       0.89      0.86      0.85     64000
+weighted avg       0.89      0.86      0.85     64000
+
+
+

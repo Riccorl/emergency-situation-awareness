@@ -64,7 +64,7 @@ def train_keras(
         hidden_size=hidden_size, dropout=0.6, recurrent_dropout=0.2, word2vec=w2v
     )
 
-    cp_path = "model_chkpt_big.h5"
+    cp_path = "model_chkpt.h5"
     cp = tf.keras.callbacks.ModelCheckpoint(
         cp_path, monitor="val_loss", verbose=1, save_best_only=True, mode="min"
     )
@@ -130,7 +130,7 @@ def train_bayes(train_x: List[List[str]], train_y: List[int]):
     :param train_y: label train
     :return: naive bayes model, tf-idf distribution
     """
-    train_x, train_y, tfidf_vec = _process_linear(train_x, train_y)
+    train_x, train_y, tfidf_vec = _process_linear(train_x, train_y, max_features=6000)
     naive = naive_bayes.MultinomialNB()
     print("\nCross Validation...")
     _train_linear(naive, train_x, train_y)
@@ -140,7 +140,7 @@ def train_bayes(train_x: List[List[str]], train_y: List[int]):
 
 
 def train_svm(
-    train_x: List[List[str]], train_y: List[int], c: int = 100.0, max_iter: int = 4000
+    train_x: List[List[str]], train_y: List[int], c: float = 1.0, max_iter: int = 1000
 ):
     """
     This method is used to train a SVM classifier
@@ -151,24 +151,13 @@ def train_svm(
     :return: SVM model, tf-idf distribution
     """
 
-    train_x, train_y, tfidf_vec = _process_linear(train_x, train_y)
-
-    # print("Standard Scaler...")
-    # scaler = StandardScaler(with_mean=False)
-    # scaler.fit(train_x)
-    # train_x = scaler.transform(train_x)
-
-    # print("Decomponing PCA...")
-    # t_svd = decomposition.TruncatedSVD(n_components=10, random_state=42)
-    # t_svd.fit(train_x)
-    # train_x = t_svd.transform(train_x)
-
-    # svm_model = svm.LinearSVC(C=c, max_iter=max_iter)
-    # svm_model = svm.NuSVC(gamma='scale', max_iter=max_iter)
-    svm_model = svm.SVC(
-        kernel="rbf", gamma="auto", degree=3, max_iter=max_iter, C=c, verbose=False
-    )
-    print("\nCross Validation...")
+    train_x, train_y, tfidf_vec = _process_linear(train_x, train_y, max_features=1000)
+    print(train_x.shape)
+    svm_model = svm.LinearSVC(C=c, max_iter=max_iter, dual=False)
+    # svm_model = svm.SVC(
+    #     kernel="rbf", gamma="scale", degree=3, max_iter=max_iter, C=c, verbose=False
+    # )
+    print("Cross Validation...")
     _train_linear(svm_model, train_x, train_y)
     print("\nFitting...")
     svm_model.fit(train_x, train_y)
@@ -177,7 +166,7 @@ def train_svm(
 
 def _process_linear(
     train_x: List[List[str]], train_y: List[int], max_features: int = None
-) -> Tuple[List[List[int]], List[int], TfidfVectorizer]:
+) -> Tuple[np.array, List[int], TfidfVectorizer]:
     """
     This method is used to process the sentences with respect to a sklearn model
     :param train_x: input train
