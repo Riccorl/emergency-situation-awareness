@@ -37,18 +37,18 @@ def main():
 
     train_x, train_y = preprocessing(limit=10000)
 
-    # print("Training Keras...")
-    # model = train.train_keras(
-    #     train_x, train_y, config.CRISIS_PRE_TRAINED, epochs=30, hidden_size=256
-    # )
-    # print("Evaluate Keras...")
-    # # model = tf.keras.models.load_model(str(config.OUTPUT_DIR / "model.h5"))
-    # evaluation.evaluate_keras(model)
+    print("Training Keras...")
+    model = train.train_keras(
+        train_x, train_y, config.CRISIS_PRE_TRAINED, epochs=30, hidden_size=256
+    )
+    print("Evaluate Keras...")
+    # model = tf.keras.models.load_model(str(config.OUTPUT_DIR / "model.h5"))
+    evaluation.evaluate_keras(model)
 
-    # print("Training Naive Bayes...")
-    # model, tfidf_vec = train.train_bayes(train_x, train_y)
-    # print("Evaluate Bayes...")
-    # evaluation.evaluate_sklearn(model, tfidf_vec, kind_model="Naive Bayes")
+    print("Training Naive Bayes...")
+    model, tfidf_vec = train.train_bayes(train_x, train_y)
+    print("Evaluate Bayes...")
+    evaluation.evaluate_sklearn(model, tfidf_vec, kind_model="Naive Bayes")
     #
     print("Training SVM...")
     model, tfidf_vec = train.train_svm(train_x, train_y, c=100.0, max_iter=2000)
