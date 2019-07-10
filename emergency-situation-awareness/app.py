@@ -35,7 +35,7 @@ def main():
     # x, y, _ = train._process_linear(x, y, max_features=1000)
     # utils.plot_space(x, y)
 
-    train_x, train_y = preprocessing(limit=10000)
+    train_x, train_y = preprocessing(limit=30000)
 
     print("Training Keras...")
     model = train.train_keras(
